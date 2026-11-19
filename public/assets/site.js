@@ -18,8 +18,8 @@ const categories = {
 
 const state = {
   articles: [], photos: [], loading: false, loadedOnce: false,
-  filter: 'all', search: '', visible: 12, nextRefreshAt: Date.now() + REFRESH_MS,
-  updatedAt: null, errors: [], sources: [], activePhoto: null, photoFallback: false
+  filter: 'all', search: '', visible: 12, galleryVisible: 11, heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS,
+  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -33,6 +33,36 @@ const safeUrl = (value) => {
   } catch { return '#'; }
 };
 
+const BOOKMARK_STORAGE_KEY = 'red-devils-daily:bookmarks:v1';
+function readBookmarks() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BOOKMARK_STORAGE_KEY) || '[]');
+    if (!Array.isArray(stored)) return [];
+    return stored.filter(a => a && safeUrl(a.url) !== '#' && typeof a.title === 'string')
+      .slice(0, 100).map(a => ({ url: a.url, title: a.title, summary: a.summary || '', source: a.source || 'ข่าวที่บันทึก',
+        category: a.category || 'club', publishedAt: a.publishedAt || null, savedAt: a.savedAt || '' }));
+  } catch { return []; }
+}
+state.bookmarks = readBookmarks();
+function isSaved(url) { return state.bookmarks.some(a => a.url === url); }
+function toggleBookmark(url) {
+  const article = [...state.articles, ...state.bookmarks].find(a => a.url === url);
+  if (!article) return;
+  state.bookmarks = isSaved(url)
+    ? state.bookmarks.filter(a => a.url !== url)
+    : [{ url: article.url, title: article.title, summary: article.summary || '', source: article.source,
+      category: article.category, publishedAt: article.publishedAt, savedAt: new Date().toISOString() }, ...state.bookmarks].slice(0, 100);
+  try { localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(state.bookmarks)); } catch { /* Storage may be disabled */ }
+  leadStory(); renderNews();
+}
+function newIn24Hours(date) {
+  const age = Date.now() - new Date(date).getTime();
+  return Number.isFinite(age) && age >= 0 && age < 24 * 60 * 60 * 1000;
+}
+function bookmarkButton(article) {
+  const saved = isSaved(article.url);
+  return `<button class="bookmark-button ${saved ? 'is-saved' : ''}" type="button" data-save-url="${escapeHtml(safeUrl(article.url))}" aria-pressed="${saved}" aria-label="${saved ? 'ยกเลิกบันทึกข่าว' : 'บันทึกข่าวไว้อ่าน'}" title="${saved ? 'นำออกจากรายการบันทึก' : 'บันทึกไว้ในเครื่องนี้'}">${saved ? '★' : '☆'} <span>${saved ? 'บันทึกแล้ว' : 'บันทึก'}</span></button>`;
+}
 function todayText() {
   return new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeZone: 'Asia/Bangkok' }).format(new Date());
 }
@@ -70,9 +100,11 @@ function leadStory() {
     el.innerHTML = `<div class="lead-image placeholder-image"></div><div class="lead-content"><span class="story-label">RED DEVILS DAILY</span><h2>ALL THINGS UNITED.</h2><p>${state.loadedOnce ? 'ยังไม่สามารถดึงข่าวล่าสุดได้ในขณะนี้ เปิดอ่านข่าวโดยตรงได้จากแหล่งข่าวด้านล่าง' : 'กำลังโหลดข่าวล่าสุดและรูปภาพ...'}</p><a class="lead-action" href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer">ดูข่าวเว็บไซต์สโมสร <span>↗</span></a></div><a class="lead-photo-credit" href="${FALLBACK.url}" target="_blank" rel="noopener noreferrer">ภาพ: André Zahn · CC BY-SA 2.0 DE</a>`;
     return;
   }
-  const article = state.articles[0];
-  const image = imageFor(article, 0);
-  el.innerHTML = `<div class="lead-image" style="background-image:url('${escapeHtml(safeUrl(image.image))}')"></div><a class="lead-photo-credit" href="${escapeHtml(safeUrl(image.url))}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(image.license || '')}">${image.isSource ? 'ภาพข่าว' : 'ภาพประกอบ'}: ${escapeHtml((image.author || 'Wikimedia').slice(0, 35))}</a><div class="lead-content"><span class="story-label">TOP STORY / ${escapeHtml(categoryName(article.category).toUpperCase())}</span><h2 class="${englishText(article.title) ? 'english' : ''}">${escapeHtml(article.title)}</h2><p>${escapeHtml(article.summary || 'อ่านรายละเอียดของข่าวนี้ได้จากสำนักข่าวต้นฉบับ')}</p><div class="lead-meta">${escapeHtml(article.source)} <b>•</b> ${escapeHtml(relativeTime(article.publishedAt))}</div><a class="lead-action" href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer">อ่านข่าวต้นฉบับ <span>↗</span></a></div>`;
+  const index = Math.min(state.heroIndex, state.articles.length - 1);
+  const article = state.articles[index];
+  const image = imageFor(article, index);
+  const heroTotal = Math.min(state.articles.length, 4);
+  el.innerHTML = `<div class="lead-image" style="background-image:url('${escapeHtml(safeUrl(image.image))}')"></div><a class="lead-photo-credit" href="${escapeHtml(safeUrl(image.url))}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(image.license || '')}">${image.isSource ? 'ภาพข่าว' : 'ภาพประกอบ'}: ${escapeHtml((image.author || 'Wikimedia').slice(0, 35))}</a><div class="lead-content"><span class="story-label">TOP STORY / ${escapeHtml(categoryName(article.category).toUpperCase())}</span><h2 class="${englishText(article.title) ? 'english' : ''}">${escapeHtml(article.title)}</h2><p>${escapeHtml(article.summary || 'อ่านรายละเอียดของข่าวนี้ได้จากสำนักข่าวต้นฉบับ')}</p><div class="lead-meta">${escapeHtml(article.source)} <b>•</b> ${escapeHtml(relativeTime(article.publishedAt))}</div><div class="lead-actions"><a class="lead-action" href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer">อ่านข่าวต้นฉบับ <span>↗</span></a>${bookmarkButton(article)}</div></div><div class="hero-controls" aria-label="เลื่อนข่าวเด่น"><button type="button" data-hero-step="-1" aria-label="ข่าวเด่นก่อนหน้า" ${heroTotal < 2 ? 'disabled' : ''}>‹</button><span>${String(index + 1).padStart(2, '0')} / ${String(heroTotal).padStart(2, '0')}</span><button type="button" data-hero-step="1" aria-label="ข่าวเด่นถัดไป" ${heroTotal < 2 ? 'disabled' : ''}>›</button></div>`;
 }
 function featuredStories() {
   const featured = state.articles.slice(1, 3);
@@ -83,8 +115,9 @@ function featuredStories() {
 }
 function filteredArticles() {
   const search = state.search.toLowerCase();
-  return state.articles.filter(article =>
-    (state.filter === 'all' || article.category === state.filter) &&
+  const articles = state.filter === 'saved' ? state.bookmarks : state.articles;
+  return articles.filter(article =>
+    (state.filter === 'all' || state.filter === 'saved' || article.category === state.filter) &&
     (!search || `${article.title} ${article.summary} ${article.source}`.toLowerCase().includes(search))
   );
 }
@@ -92,28 +125,34 @@ function renderNews() {
   const all = filteredArticles();
   const visible = all.slice(0, state.visible);
   $('#showMore').hidden = visible.length >= all.length;
-  $('#newsUpdatedBadge').textContent = state.loadedOnce ? `${all.length} ข่าวจากแหล่งข่าวจริง` : 'กำลังอัปเดตข้อมูล';
+  $('#savedCount').textContent = state.bookmarks.length;
+  $('#newsUpdatedBadge').textContent = state.filter === 'saved' ? `${all.length} ข่าวที่บันทึกไว้ในเบราว์เซอร์` :
+    state.loadedOnce ? `${all.length} ข่าวจากแหล่งข่าวจริง` : 'กำลังอัปเดตข้อมูล';
   if (!visible.length) {
-    $('#newsGrid').innerHTML = `<div class="empty-state"><strong>${state.loadedOnce ? 'ยังไม่มีข่าวในหมวดนี้' : 'กำลังโหลดข่าว...'}</strong><p>${state.search || state.filter !== 'all' ? 'ลองเปลี่ยนหมวดหมู่หรือคำค้นหาเพื่อดูข่าวเพิ่มเติม' : 'หากแหล่งข่าวตอบกลับช้า สามารถอ่านข่าวตรงจากเว็บไซต์ของสโมสรได้'}</p><a href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer">ไปที่ ManUtd.com ↗</a></div>`;
+    $('#newsGrid').innerHTML = `<div class="empty-state"><strong>${state.filter === 'saved' ? 'ยังไม่มีข่าวที่บันทึกไว้' : state.loadedOnce ? 'ยังไม่มีข่าวในหมวดนี้' : 'กำลังโหลดข่าว...'}</strong><p>${state.filter === 'saved' ? 'กดปุ่ม ☆ บันทึก ในการ์ดข่าวที่สนใจ แล้วกลับมาอ่านที่นี่ได้' : state.search || state.filter !== 'all' ? 'ลองเปลี่ยนหมวดหมู่หรือคำค้นหาเพื่อดูข่าวเพิ่มเติม' : 'หากแหล่งข่าวตอบกลับช้า สามารถอ่านข่าวตรงจากเว็บไซต์ของสโมสรได้'}</p><a href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer">ไปที่ ManUtd.com ↗</a></div>`;
     return;
   }
   $('#newsGrid').innerHTML = visible.map((article, index) => {
     const photo = imageFor(article, index);
-    return `<article class="news-card"><div class="card-image">${imageTag(photo, `ภาพประกอบเกี่ยวกับแมนยู สำหรับหัวข้อ ${article.title}`)}<span class="card-sequence">${String(index + 1).padStart(2, '0')}</span>${creditLink(photo)}</div><div class="news-card-body"><div class="card-topline"><span class="card-cat">${escapeHtml(categoryName(article.category).toUpperCase())}</span><span class="card-meta">${escapeHtml(relativeTime(article.publishedAt))}</span></div><h3 class="card-title ${englishText(article.title) ? 'en' : ''}"><a href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(article.title)}</a></h3>${article.summary ? `<p class="card-summary">${escapeHtml(article.summary)}</p>` : ''}<div class="card-bottom"><span class="card-meta">${escapeHtml(article.source)}</span><a href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer" class="card-read">READ STORY <span>↗</span></a></div></div></article>`;
+    return `<article class="news-card"><div class="card-image">${imageTag(photo, `ภาพประกอบเกี่ยวกับแมนยู สำหรับหัวข้อ ${article.title}`)}<span class="card-sequence">${String(index + 1).padStart(2, '0')}</span>${newIn24Hours(article.publishedAt) ? '<span class="news-fresh">ใหม่ใน 24 ชม.</span>' : ''}${creditLink(photo)}</div><div class="news-card-body"><div class="card-topline"><span class="card-cat">${escapeHtml(categoryName(article.category).toUpperCase())}</span><span class="card-meta">${escapeHtml(relativeTime(article.publishedAt))}</span></div><h3 class="card-title ${englishText(article.title) ? 'en' : ''}"><a href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(article.title)}</a></h3>${article.summary ? `<p class="card-summary">${escapeHtml(article.summary)}</p>` : ''}<div class="card-bottom"><span class="card-meta">${escapeHtml(article.source)}</span><div class="card-actions">${bookmarkButton(article)}<a href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer" class="card-read">READ STORY <span>↗</span></a></div></div></div></article>`;
   }).join('');
 }
 function renderGallery() {
-  const photos = state.photos.length ? state.photos.slice(0, 11) : [FALLBACK];
+  const photos = state.photos.length ? state.photos.slice(0, state.galleryVisible) : [FALLBACK];
   $('#photoCount').textContent = state.photos.length ? String(state.photos.length).padStart(2, '0') : '01';
   $('#photoWall').innerHTML = photos.map((photo, i) =>
     `<button type="button" class="photo-tile" data-photo="${i}" aria-label="ดูภาพ ${escapeHtml(photo.title || 'แมนยู')} และเครดิต"><img src="${escapeHtml(safeUrl(photo.image))}" alt="${escapeHtml(photo.title || 'ภาพเกี่ยวกับแมนเชสเตอร์ ยูไนเต็ด')}" loading="lazy" referrerpolicy="no-referrer"/><span class="tile-corner">↗</span><span class="tile-info"><small>${i === 0 ? 'FEATURED FRAME' : `FRAME / ${String(i + 1).padStart(2, '0')}`}</small><strong>${escapeHtml(photo.title || 'UNITED MOMENTS')}</strong></span></button>`
   ).join('');
   state.displayPhotos = photos;
+  $('#galleryMore').hidden = state.photos.length <= photos.length;
 }
 function openPhoto(index) {
   const photo = state.displayPhotos?.[index];
   if (!photo) return;
   state.activePhoto = photo;
+  state.activePhotoIndex = index;
+  $('#lightboxPrev').disabled = state.displayPhotos.length < 2;
+  $('#lightboxNext').disabled = state.displayPhotos.length < 2;
   $('#lightboxImg').src = safeUrl(photo.original || photo.image);
   $('#lightboxImg').alt = photo.title || 'ภาพประกอบแมนเชสเตอร์ ยูไนเต็ด';
   $('#lightboxTitle').textContent = photo.title || 'United Moments';
@@ -123,6 +162,10 @@ function openPhoto(index) {
   $('#photoLightbox').hidden = false;
   document.body.style.overflow = 'hidden';
   $('#closeLightbox').focus();
+}
+function changePhoto(offset) {
+  if ($('#photoLightbox').hidden || state.displayPhotos.length < 2) return;
+  openPhoto((state.activePhotoIndex + offset + state.displayPhotos.length) % state.displayPhotos.length);
 }
 function closePhoto() {
   $('#photoLightbox').hidden = true;
@@ -135,6 +178,16 @@ function renderHeader() {
   $('#lastUpdated').textContent = state.updatedAt
     ? new Intl.DateTimeFormat('th-TH', { timeStyle: 'short', timeZone: 'Asia/Bangkok' }).format(new Date(state.updatedAt)) + ' น.'
     : 'ยังไม่มีข้อมูล';
+  const warning = state.newsFailed || state.photosFailed || state.errors.length > 0;
+  const message = state.newsFailed && state.photosFailed ? 'เชื่อมต่อแหล่งข่าวและภาพไม่ได้ กำลังแสดงข้อมูลเดิมหากมี' :
+    state.newsFailed ? 'ข่าวยังอัปเดตไม่สำเร็จ กำลังแสดงข้อมูลเดิมหากมี' :
+    state.photosFailed ? 'คลังภาพตอบกลับช้า ข่าวยังอัปเดตตามปกติ' :
+    state.errors.length ? `แหล่งข่าวบางแห่ง (${state.errors.length}) ตอบกลับไม่ได้ กำลังแสดงข่าวจากแหล่งอื่น` :
+    'เชื่อมต่อแหล่งข่าวและคลังภาพสำเร็จ';
+  $('#syncHealth').textContent = message;
+  $('#syncHealth').classList.toggle('has-warning', warning);
+  $('#feedNotice').hidden = !warning;
+  $('#feedNotice').textContent = message;
 }
 function renderAll() {
   leadStory(); featuredStories(); renderNews(); renderGallery(); renderHeader();
@@ -160,6 +213,8 @@ async function refresh() {
   state.loading = true;
   $('#headerRefresh').classList.add('spinning');
   const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos')]);
+  state.newsFailed = results[0].status === 'rejected';
+  state.photosFailed = results[1].status === 'rejected';
   if (results[0].status === 'fulfilled' && Array.isArray(results[0].value.articles)) {
     state.articles = results[0].value.articles;
     state.updatedAt = results[0].value.updatedAt;
@@ -193,14 +248,34 @@ function init() {
     state.search = event.target.value.trim(); state.visible = 12; renderNews();
   });
   $('#showMore').addEventListener('click', () => { state.visible += 9; renderNews(); });
+  $('#galleryMore').addEventListener('click', () => { state.galleryVisible += 12; renderGallery(); });
+  const onSave = e => {
+    const button = e.target.closest('[data-save-url]');
+    if (button) { e.preventDefault(); toggleBookmark(button.dataset.saveUrl); }
+  };
+  $('#newsGrid').addEventListener('click', onSave);
+  $('#leadStory').addEventListener('click', e => {
+    onSave(e);
+    const button = e.target.closest('[data-hero-step]');
+    if (!button || state.articles.length < 2) return;
+    const total = Math.min(state.articles.length, 4);
+    state.heroIndex = (state.heroIndex + Number(button.dataset.heroStep) + total) % total;
+    leadStory();
+  });
   $('#headerRefresh').addEventListener('click', refresh);
   $('#photoWall').addEventListener('click', e => {
     const tile = e.target.closest('[data-photo]');
     if (tile) openPhoto(Number(tile.dataset.photo));
   });
   $('#closeLightbox').addEventListener('click', closePhoto);
+  $('#lightboxPrev').addEventListener('click', () => changePhoto(-1));
+  $('#lightboxNext').addEventListener('click', () => changePhoto(1));
   $('#photoLightbox').addEventListener('click', e => { if (e.target.dataset.close) closePhoto(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePhoto(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePhoto();
+    if (!$('#photoLightbox').hidden && e.key === 'ArrowLeft') changePhoto(-1);
+    if (!$('#photoLightbox').hidden && e.key === 'ArrowRight') changePhoto(1);
+  });
   // Preserve visual fallback if external image servers are unreachable.
   document.addEventListener('error', e => { if (e.target?.tagName === 'IMG') e.target.style.opacity = '0'; }, true);
   $('#mobileMenu').addEventListener('click', () => {
