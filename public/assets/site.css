@@ -174,3 +174,76 @@
   .featured-item { grid-template-columns: 122px minmax(0, 1fr); }
   .featured-thumb { width: 122px; height: 86px; min-height: 0; }
 }
+
+
+/* FIX MATCHDAY CREST ALIGNMENT — normalize Liverpool and all opponent badges.
+   ESPN crests can include transparent padding; keep every badge inside its own
+   square, without changing the logo's aspect ratio or enlarging it to crop. */
+.next-match-versus .match-club {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+}
+.next-match-versus .match-club .team-badge {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  min-height: 80px;
+  max-width: 80px;
+  max-height: 80px;
+  aspect-ratio: 1;
+  flex: 0 0 80px;
+  margin-inline: auto;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.next-match-versus .match-club .team-badge > .team-logo-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  object-fit: contain;
+  object-position: center;
+  padding: 5px;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  transform: none;
+}
+/* Liverpool's circular ESPN asset has different visual margins; give it
+   a little extra space so it fits the same square as other club crests. */
+.next-match-versus .team-logo-image[src*="/364.png"] {
+  padding: 9px;
+}
+/* Keep a clean image: the fallback circular badge should only show on errors. */
+.team-badge:has(> .team-logo-image:not([hidden])) > .team-badge-fallback {
+  visibility: hidden;
+}
+@media (max-width: 700px) {
+  .next-match-versus .match-club .team-badge {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
+    flex-basis: 64px;
+  }
+  .next-match-versus .match-club .team-badge > .team-logo-image {
+    padding: 4px;
+  }
+  .next-match-versus .team-logo-image[src*="/364.png"] {
+    padding: 7px;
+  }
+}
