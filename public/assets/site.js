@@ -18,8 +18,8 @@ const categories = {
 
 const state = {
   articles: [], photos: [], loading: false, loadedOnce: false,
-  filter: 'all', search: '', visible: 12, galleryVisible: 11, heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS,
-  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false
+  filter: 'all', search: '', visible: 12, galleryVisible: 11, photoFilter: 'all', heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS,
+  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false, matchesFailed: false, matches: null
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -138,14 +138,19 @@ function renderNews() {
   }).join('');
 }
 function renderGallery() {
-  const photos = state.photos.length ? state.photos.slice(0, state.galleryVisible) : [FALLBACK];
+  const allPhotos = state.photos.length ? state.photos : [];
+  const players = allPhotos.filter(photo => photo.topic === 'players');
+  const filtered = state.photoFilter === 'players' ? players : allPhotos;
+  const photos = (filtered.length ? filtered.slice(0, state.galleryVisible) : state.photoFilter === 'all' ? [FALLBACK] : []);
+  $('#playerPhotoCount').textContent = `(${players.length})`;
   $('#photoCount').textContent = state.photos.length ? String(state.photos.length).padStart(2, '0') : '01';
-  $('#photoWall').innerHTML = photos.map((photo, i) =>
+  $('#photoWall').innerHTML = photos.length ? photos.map((photo, i) =>
     `<button type="button" class="photo-tile" data-photo="${i}" aria-label="ดูภาพ ${escapeHtml(photo.title || 'แมนยู')} และเครดิต"><img src="${escapeHtml(safeUrl(photo.image))}" alt="${escapeHtml(photo.title || 'ภาพเกี่ยวกับแมนเชสเตอร์ ยูไนเต็ด')}" loading="lazy" referrerpolicy="no-referrer"/><span class="tile-corner">↗</span><span class="tile-info"><small>${i === 0 ? 'FEATURED FRAME' : `FRAME / ${String(i + 1).padStart(2, '0')}`}</small><strong>${escapeHtml(photo.title || 'UNITED MOMENTS')}</strong></span></button>`
-  ).join('');
+  ).join('') : `<div class="gallery-empty">ยังไม่พบภาพนักเตะที่เผยแพร่ภายใต้สัญญาอนุญาตที่รองรับจาก Wikimedia Commons ในขณะนี้ <a href="https://commons.wikimedia.org/wiki/Category:Players_of_Manchester_United_F.C." target="_blank" rel="noopener noreferrer">ดูภาพที่ Wikimedia Commons ↗</a></div>`;
   state.displayPhotos = photos;
-  $('#galleryMore').hidden = state.photos.length <= photos.length;
+  $('#galleryMore').hidden = filtered.length <= photos.length;
 }
+
 function openPhoto(index) {
   const photo = state.displayPhotos?.[index];
   if (!photo) return;
@@ -172,6 +177,47 @@ function closePhoto() {
   document.body.style.overflow = '';
   state.activePhoto = null;
 }
+function matchDate(raw, options = {}) {
+  if (!raw || !Number.isFinite(new Date(raw).getTime())) return 'ยังไม่ระบุเวลา';
+  return new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', ...options }).format(new Date(raw));
+}
+function matchScore(match) {
+  if (match.scoreUnited == null || match.scoreOpponent == null) return '— : —';
+  return match.home ? `${escapeHtml(match.scoreUnited)} : ${escapeHtml(match.scoreOpponent)}` : `${escapeHtml(match.scoreOpponent)} : ${escapeHtml(match.scoreUnited)}`;
+}
+function matchPair(match) {
+  const opponent = escapeHtml(match.opponent || 'คู่แข่ง');
+  return match.home ? `<strong>MAN UTD</strong><span class="versus">VS</span><strong>${opponent}</strong>` : `<strong>${opponent}</strong><span class="versus">VS</span><strong>MAN UTD</strong>`;
+}
+function matchEmpty(text) { return `<p class="match-placeholder">${escapeHtml(text)}</p>`; }
+function renderMatches() {
+  const data = state.matches;
+  const live = data?.live || [];
+  const fixtures = data?.upcoming || [];
+  const results = data?.results || [];
+  const next = live[0] || fixtures[0];
+  const info = data?.sourceUrl && safeUrl(data.sourceUrl) !== '#' ? safeUrl(data.sourceUrl) : 'https://www.espn.com/soccer/team/fixtures/_/id/360';
+  $('#matchSynced').textContent = data?.updatedAt ? `· ${matchDate(data.updatedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} น.` : '· ยังไม่อัปเดต';
+  $('#nextMatch').innerHTML = next ? `<div class="next-match-top"><span class="match-kicker">${next.status === 'live' ? 'กำลังแข่งขัน · ข้อมูลอาจล่าช้า' : 'NEXT MATCH / นัดต่อไป'}</span><span class="match-league">${escapeHtml(next.competition)}</span></div><div class="next-match-crest">MU <span>↗</span></div><div class="next-match-versus">${matchPair(next)}</div><div class="next-match-time">${matchDate(next.date, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} น. · เวลาไทย</div>${next.status === 'live' ? `<div class="next-match-score">${matchScore(next)} <small>LIVE</small></div>` : ''}<div class="next-match-bottom"><span>${escapeHtml(next.venue || 'รอข้อมูลสนาม')}</span><a href="${escapeHtml(safeUrl(next.url))}" target="_blank" rel="noopener noreferrer">รายละเอียดการแข่งขัน ↗</a></div>` : `<div class="match-missing"><span class="match-kicker">NEXT MATCH</span><h3>รอข้อมูลโปรแกรมการแข่งขัน</h3><p>ยังไม่พบโปรแกรมแข่งแมนยูจากแหล่งข้อมูลที่เชื่อมต่อ ไม่แสดงตารางสมมุติ</p><a href="${escapeHtml(info)}" target="_blank" rel="noopener noreferrer">ดูโปรแกรมบน ESPN ↗</a></div>`;
+  $('#matchResults').innerHTML = results.length ? results.map(m => `<a class="result-line" href="${escapeHtml(safeUrl(m.url))}" target="_blank" rel="noopener noreferrer"><span><small>${escapeHtml(m.competition)} · ${matchDate(m.date, { day: 'numeric', month: 'short' })}</small><strong>${escapeHtml(m.home ? 'แมนยู' : m.opponent)} <em>—</em> ${escapeHtml(m.home ? m.opponent : 'แมนยู')}</strong></span><b>${matchScore(m)}</b></a>`).join('') : matchEmpty('ยังไม่พบผลการแข่งขันที่ยืนยันแล้ว');
+  $('#fixtureList').innerHTML = fixtures.length ? fixtures.map(m => `<a class="fixture-item" href="${escapeHtml(safeUrl(m.url))}" target="_blank" rel="noopener noreferrer"><span class="fixture-date"><strong>${matchDate(m.date, {day: '2-digit'})}</strong><small>${matchDate(m.date, {month: 'short'})}</small></span><span class="fixture-main"><small>${escapeHtml(m.competition)} · ${m.home ? 'เหย้า' : 'เยือน'}</small><span>${matchPair(m)}</span></span><span class="fixture-time">${matchDate(m.date, { hour: '2-digit', minute: '2-digit' })} น.</span><span class="fixture-arrow">↗</span></a>`).join('') : matchEmpty('ยังไม่มีโปรแกรมในข้อมูลที่ได้รับ ลองดูจากแหล่งข่าวต้นฉบับ');
+  const warning = state.matchesFailed || data?.partial || data?.stale || !data?.hasData;
+  $('#matchFeedHealth').classList.toggle('has-warning', Boolean(warning));
+  $('#matchFeedHealth').textContent = state.matchesFailed ? 'ไม่สามารถเชื่อมต่อข้อมูลการแข่งขันได้ ข้อมูลเดิมอาจไม่ใช่ล่าสุด' :
+    data?.stale ? 'กำลังแสดงตารางเดิมที่บันทึกไว้ เพราะแหล่งข้อมูลตอบกลับไม่ได้' :
+    data?.partial ? 'ข้อมูลจากบางรายการยังไม่พร้อม โปรแกรมอาจไม่ครบทุกถ้วย · โปรดตรวจสอบเวลาจากต้นทางก่อนเดินทาง' :
+    !data?.hasData ? 'ยังไม่มีข้อมูลจาก ESPN ในขณะนี้ (ระบบไม่ได้สร้างสกอร์จำลอง)' :
+    'เวลาแข่งขันแสดงตามเวลาไทย · ข้อมูลอาจล่าช้าและโปรแกรมเปลี่ยนได้ กรุณายืนยันกับแหล่งข่าวก่อนใช้งาน';
+}
+function renderMatchNews() {
+  const before = /preview|pre.match|build.up|predicted|line.up|team news|kick.off|ahead of|ก่อนเกม|พรีวิว|คาดการณ์|จัดทัพ|ตัวจริง|เตรียมพบ|ก่อนพบ/i;
+  const after = /match report|full.time|reaction|highlights|post.match|beats?|defeats?|draws?|wins?|results?|score|recap|หลังเกม|ผลบอล|จบเกม|พ่าย|เอาชนะ|ไฮไลท์|เสมอ/i;
+  const items = state.articles.filter(a => a.category === 'matches' || before.test(a.title) || after.test(a.title));
+  const toHtml = (articles, query) => articles.length ? articles.slice(0, 3).map(a => `<a href="${escapeHtml(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(a.title)}</span><small>${escapeHtml(a.source)} · ${escapeHtml(relativeTime(a.publishedAt))}</small></a>`).join('') : `<p>ยังไม่พบหัวข้อข่าวประเภทนี้จาก RSS</p><a class="match-external" href="${escapeHtml(query)}" target="_blank" rel="noopener noreferrer">ค้นหาข่าวเพิ่มเติม ↗</a>`;
+  $('#preMatchNews').innerHTML = toHtml(items.filter(a => before.test(a.title)), 'https://news.google.com/search?q=Manchester%20United%20match%20preview');
+  $('#postMatchNews').innerHTML = toHtml(items.filter(a => after.test(a.title)), 'https://news.google.com/search?q=Manchester%20United%20match%20report');
+}
+
 function renderHeader() {
   $('#articleCount').textContent = String(state.articles.length).padStart(2, '0');
   $('#sourceCount').textContent = String(state.sources.length || 4).padStart(2, '0');
@@ -190,7 +236,7 @@ function renderHeader() {
   $('#feedNotice').textContent = message;
 }
 function renderAll() {
-  leadStory(); featuredStories(); renderNews(); renderGallery(); renderHeader();
+  leadStory(); featuredStories(); renderNews(); renderMatches(); renderMatchNews(); renderGallery(); renderHeader();
 }
 function updateCountdown() {
   const timeLeft = Math.max(0, state.nextRefreshAt - Date.now());
@@ -212,9 +258,10 @@ async function refresh() {
   if (state.loading) return;
   state.loading = true;
   $('#headerRefresh').classList.add('spinning');
-  const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos')]);
+  const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos'), fetchJson('/api/matches')]);
   state.newsFailed = results[0].status === 'rejected';
   state.photosFailed = results[1].status === 'rejected';
+  state.matchesFailed = results[2].status === 'rejected';
   if (results[0].status === 'fulfilled' && Array.isArray(results[0].value.articles)) {
     state.articles = results[0].value.articles;
     state.updatedAt = results[0].value.updatedAt;
@@ -224,6 +271,7 @@ async function refresh() {
   if (results[1].status === 'fulfilled' && Array.isArray(results[1].value.photos)) {
     state.photos = results[1].value.photos;
   }
+  if (results[2].status === 'fulfilled') state.matches = results[2].value;
   state.loadedOnce = true;
   state.nextRefreshAt = Date.now() + REFRESH_MS;
   state.loading = false;
@@ -249,6 +297,17 @@ function init() {
   });
   $('#showMore').addEventListener('click', () => { state.visible += 9; renderNews(); });
   $('#galleryMore').addEventListener('click', () => { state.galleryVisible += 12; renderGallery(); });
+  $('#photoFilterTabs').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-photo-filter]');
+    if (!button) return;
+    state.photoFilter = button.dataset.photoFilter === 'players' ? 'players' : 'all';
+    state.galleryVisible = 11;
+    document.querySelectorAll('.photo-filter-button').forEach(b => {
+      b.classList.toggle('active', b === button);
+      b.setAttribute('aria-pressed', String(b === button));
+    });
+    renderGallery();
+  });
   const onSave = e => {
     const button = e.target.closest('[data-save-url]');
     if (button) { e.preventDefault(); toggleBookmark(button.dataset.saveUrl); }
