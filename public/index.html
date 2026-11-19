@@ -67,7 +67,7 @@
           <div class="update-panel-top"><span class="status-icon"><span class="pulse"></span></span><span>ระบบอัปเดตอัตโนมัติ</span><span class="panel-live">AUTO SYNC</span></div>
           <div class="update-panel-main"><div><small>ตรวจสอบครั้งล่าสุด</small><strong id="lastUpdated">กำลังโหลด...</strong></div><div><small>ตรวจสอบครั้งถัดไป</small><strong id="nextUpdate">10:00</strong></div></div>
           <div class="update-panel-bar"><span id="refreshProgress"></span></div>
-          <p>เว็บจะตรวจข่าวและรูปใหม่ทุก 10 นาทีเมื่อหน้านี้เปิดอยู่</p>
+          <p>เว็บจะตรวจข่าวและรูปใหม่ทุก 10 นาทีเมื่อหน้านี้เปิดอยู่</p><p id="syncHealth" class="sync-health" role="status">กำลังเชื่อมต่อแหล่งข่าว...</p>
         </div>
       </div>
     </section>
@@ -92,6 +92,7 @@
           <button type="button" class="filter-tab" data-category="transfers" aria-pressed="false">ตลาดนักเตะ</button>
           <button type="button" class="filter-tab" data-category="matches" aria-pressed="false">การแข่งขัน</button>
           <button type="button" class="filter-tab" data-category="players" aria-pressed="false">นักเตะ</button>
+          <button type="button" class="filter-tab" data-category="saved" aria-pressed="false">★ บันทึกไว้ <span id="savedCount">0</span></button>
         </div>
         <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="searchInput" type="search" placeholder="ค้นหาข่าวแมนยู..." autocomplete="off" aria-label="ค้นหาข่าว" /></label>
       </div>
@@ -101,12 +102,14 @@
         <div class="skeleton-card"><div class="skeleton-photo loading-glow"></div><div class="skeleton-line loading-glow"></div><div class="skeleton-line short loading-glow"></div></div>
       </div>
       <div class="show-more-wrap"><button id="showMore" class="outline-button" type="button" hidden>ดูข่าวเพิ่มเติม <span>↗</span></button></div>
+      <div id="feedNotice" class="feed-notice" role="status" hidden></div>
     </section>
 
     <section class="gallery-section" id="photos">
       <div class="container">
         <div class="section-header gallery-heading"><div><div class="section-kicker">THROUGH THE LENS <span>/</span> 002</div><h2>RED <em>FRAMES</em><span class="red-period">.</span> <small>PHOTO GALLERY</small></h2><p>ภาพประกอบเกี่ยวกับแมนเชสเตอร์ ยูไนเต็ด จากคลังภาพเสรีพร้อมเครดิตเจ้าของผลงาน</p></div><div class="gallery-arrow" aria-hidden="true">↗</div></div>
         <div class="photo-wall" id="photoWall" aria-live="polite"><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div></div>
+        <div class="gallery-more-wrap"><button id="galleryMore" class="outline-button" type="button" hidden>ดูภาพเพิ่มเติม <span>↗</span></button></div>
         <div class="gallery-bottom"><div><span class="outline-dot"></span> PHOTO CREDIT: WIKIMEDIA COMMONS / RESPECT CREATOR LICENSES</div><a href="https://commons.wikimedia.org/wiki/Category:Manchester_United_F.C." target="_blank" rel="noopener noreferrer">ดูคลังภาพต้นฉบับ <span>↗</span></a></div>
       </div>
     </section>
@@ -123,6 +126,6 @@
   </main>
   <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand">RED DEVILS <span>DAILY</span><small>MADE FOR THE LOVE OF UNITED.</small></div><div class="footer-right"><p>Independent fan-made news aggregator. Not affiliated with Manchester United Football Club.</p><p>News belongs to original publishers. Images remain under their respective licenses.</p></div><a href="#home" class="back-top" aria-label="กลับไปด้านบน">↑</a></div></footer>
 
-  <div class="lightbox" id="photoLightbox" hidden role="dialog" aria-modal="true" aria-labelledby="lightboxTitle"><div class="lightbox-backdrop" data-close="true"></div><div class="lightbox-content"><button class="lightbox-close" id="closeLightbox" aria-label="ปิดภาพ">×</button><img id="lightboxImg" alt="" /><div class="lightbox-meta"><h3 id="lightboxTitle"></h3><p id="lightboxCredit"></p><div class="lightbox-links"><a id="lightboxSource" href="#" target="_blank" rel="noopener noreferrer">ดูที่มาและเครดิตภาพ ↗</a><a id="lightboxLicense" href="#" target="_blank" rel="noopener noreferrer">สัญญาอนุญาต ↗</a></div></div></div></div>
+  <div class="lightbox" id="photoLightbox" hidden role="dialog" aria-modal="true" aria-labelledby="lightboxTitle"><div class="lightbox-backdrop" data-close="true"></div><div class="lightbox-content"><button class="lightbox-close" id="closeLightbox" aria-label="ปิดภาพ">×</button><button class="lightbox-step lightbox-prev" id="lightboxPrev" aria-label="ภาพก่อนหน้า" type="button">‹</button><img id="lightboxImg" alt="" /><button class="lightbox-step lightbox-next" id="lightboxNext" aria-label="ภาพถัดไป" type="button">›</button><div class="lightbox-meta"><h3 id="lightboxTitle"></h3><p id="lightboxCredit"></p><div class="lightbox-links"><a id="lightboxSource" href="#" target="_blank" rel="noopener noreferrer">ดูที่มาและเครดิตภาพ ↗</a><a id="lightboxLicense" href="#" target="_blank" rel="noopener noreferrer">สัญญาอนุญาต ↗</a></div></div></div></div>
 </body>
 </html>
