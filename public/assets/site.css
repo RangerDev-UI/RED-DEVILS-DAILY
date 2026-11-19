@@ -223,7 +223,7 @@
 }
 /* Liverpool's circular ESPN asset has different visual margins; give it
    a little extra space so it fits the same square as other club crests. */
-.next-match-versus .team-logo-image[src*="/364.png"] {
+.next-match-versus .match-club .team-badge > .team-logo-image[src*="/364.png"] {
   padding: 9px;
 }
 /* Keep a clean image: the fallback circular badge should only show on errors. */
@@ -243,7 +243,7 @@
   .next-match-versus .match-club .team-badge > .team-logo-image {
     padding: 4px;
   }
-  .next-match-versus .team-logo-image[src*="/364.png"] {
+  .next-match-versus .match-club .team-badge > .team-logo-image[src*="/364.png"] {
     padding: 7px;
   }
 }
