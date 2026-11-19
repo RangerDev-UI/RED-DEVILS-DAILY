@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeRoster, normalizePlayer, cleanHeadshot, loadSquad, SQUAD_SOURCE } from '../lib/squad.mjs';
+import { normalizeRoster, normalizePlayer, cleanHeadshot, loadSquad, SQUAD_SOURCE, mergeVerifiedSquad, normalizedPlayerName } from '../lib/squad.mjs';
+import { REFERENCE_PLAYERS, REFERENCE_SOURCE, REFERENCE_SEASON } from '../lib/squad-reference.mjs';
 import { classifyTransfer, loadTransfers, TRANSFER_FEEDS } from '../lib/transfers.mjs';
 import { evaluateHealth } from '../lib/health.mjs';
 
@@ -48,16 +49,40 @@ test('squad blocks unknown players, guessed number, fake picture, unverified sta
   assert.equal(cleanHeadshot('https://a.espncdn.com.evil.tld/i/headshots/soccer/players/full/123.png'), null);
 });
 
-test('squad fetch requires recognizable ESPN roster and preserves freshness', async () => {
+test('official 2026/27 PL squad stays complete when ESPN is unavailable', async () => {
   const now = new Date('2026-11-19T09:30:00Z');
-  const data = await loadSquad(async (url) => {
-    assert.equal(url, SQUAD_SOURCE);
-    return new Response(JSON.stringify({ athletes: [sampleAthlete] }), {status:200});
-  }, now);
-  assert.equal(data.players.length, 1);
-  assert.equal(data.updatedAt, now.toISOString());
-  await assert.rejects(() => loadSquad(async()=>new Response('{}',{status:200})), /Unexpected/);
-  await assert.rejects(() => loadSquad(async()=>new Response('',{status:403})), /403/);
+  assert.equal(REFERENCE_PLAYERS.length,33);
+  assert.equal(new Set(REFERENCE_PLAYERS.map(p => p.jersey)).size,33);
+  assert.equal(REFERENCE_SEASON,'2026/27');
+  for (const [group,count] of Object.entries({'ผู้รักษาประตู':4,'กองหลัง':12,'กองกลาง':9,'กองหน้า':8}))
+    assert.equal(REFERENCE_PLAYERS.filter(p => p.group===group).length,count);
+  const empty = await loadSquad(async () => new Response(JSON.stringify({athletes:[]}),{status:200}),now);
+  assert.equal(empty.count,33);
+  assert.equal(empty.sourceUrl,REFERENCE_SOURCE);
+  assert.equal(empty.updatedAt,now.toISOString());
+  assert.equal(empty.partial,true);
+  assert.equal(empty.enrichedCount,0);
+  assert.equal(empty.players[0].appearances,null);
+  const blocked = await loadSquad(async()=>new Response('',{status:403}),now);
+  assert.equal(blocked.count,33);
+  assert.equal(blocked.hasData,true);
+});
+
+test('ESPN supplements photos/stats but cannot replace official members or numbers', async () => {
+  const player = {...sampleAthlete,displayName:'Matheus Cunha',jersey:'99',statistics:{appearances:5,goals:2,assists:1}};
+  const data = await loadSquad(async url => {
+    assert.equal(url,SQUAD_SOURCE);
+    return new Response(JSON.stringify({athletes:[player,{id:33345,displayName:'Former Player',jersey:77}]}),{status:200});
+  });
+  assert.equal(data.count,33);
+  assert.equal(data.enrichedCount,1);
+  const matheus = data.players.find(p => p.name==='Matheus Cunha');
+  assert.equal(matheus.jersey,'10');
+  assert.equal(matheus.goals,2);
+  assert.ok(matheus.headshot.endsWith('/12345.png'));
+  assert.equal(data.players.some(p => p.name==='Former Player'),false);
+  assert.equal(normalizedPlayerName('Lisandro Martínez'),normalizedPlayerName('Lisandro Martinez'));
+  assert.equal(mergeVerifiedSquad([{id:'17',name:'Lisandro Martinez'}]).enriched,1);
 });
 
 test('only specific completed announcements on original club domain receive club status', () => {

@@ -1,4 +1,5 @@
-import { loadSquad, SQUAD_PAGE } from '../../lib/squad.mjs';
+import { loadSquad } from '../../lib/squad.mjs';
+import { REFERENCE_SOURCE } from '../../lib/squad-reference.mjs';
 let cache = null, expiry = 0;
 export async function handler() {
   if (cache && Date.now() < expiry) return respond(cache);
@@ -9,8 +10,8 @@ export async function handler() {
     return respond(data);
   } catch {
     return respond(cache ? { ...cache, stale: true, error: 'แหล่งรายชื่อนักเตะตอบกลับไม่ได้' } : {
-      players: [], count: 0, source: 'ESPN', sourceUrl: SQUAD_PAGE, updatedAt: null, hasData: false,
-      stale: true, error: 'ยังยืนยันรายชื่อนักเตะจาก ESPN ไม่ได้', statsNote: 'ยังไม่มีข้อมูล'
+      players: [], count: 0, source: 'Premier League 2026/27', sourceUrl: REFERENCE_SOURCE, updatedAt: null, hasData: false,
+      stale: true, error: 'ยังไม่สามารถดึงรายชื่อได้', statsNote: 'ยังไม่มีข้อมูล'
     });
   }
 }

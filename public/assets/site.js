@@ -279,17 +279,17 @@ function renderSquad() {
   const players = Array.isArray(state.squad?.players) ? state.squad.players : [];
   const filtered = players.filter(player => (state.squadFilter === 'all' || player.group === state.squadFilter) &&
     (!state.playerSearch || String(player.name).toLowerCase().includes(state.playerSearch)));
-  $('#squadCount').textContent = `${players.length} นักเตะจาก ESPN`;
+  $('#squadCount').textContent = `${players.length} นักเตะ · ฤดูกาล ${escapeHtml(state.squad?.season || '2026/27')}`;
   $('#squadSynced').textContent = state.squad?.updatedAt ? `เช็ก ${matchDate(state.squad.updatedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} น.` : 'ยังไม่พบเวลาอัปเดต';
   $('#squadGrid').innerHTML = filtered.length ? filtered.map(p => {
     const img = safePlayerHeadshot(p.headshot);
     const initials = String(p.name || '').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
     const val = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 ? escapeHtml(String(v)) : '—';
     return `<article class="player-card"><div class="player-image"><span class="player-number">${escapeHtml(p.jersey || 'MU')}</span><span class="player-silhouette">${escapeHtml(initials)}</span>${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async" class="player-photo">` : ''}</div><div class="player-content"><span class="player-position">${escapeHtml(p.position || p.group || 'ไม่ระบุ')}</span><h3 class="player-name">${escapeHtml(p.name)}</h3><span class="player-number-small">เบอร์ ${escapeHtml(p.jersey || '—')}</span><div class="player-stats"><span><b>${val(p.appearances)}</b>นัด</span><span><b>${val(p.goals)}</b>ประตู</span><span><b>${val(p.assists)}</b>แอสซิสต์</span></div><a class="player-profile" href="${escapeHtml(safeUrl(p.profileUrl))}" target="_blank" rel="noopener noreferrer">ข้อมูลผู้เล่น ↗</a></div></article>`;
-  }).join('') : `<p class="feature-loading">${state.squadFailed || !players.length ? 'ยังไม่สามารถยืนยันรายชื่อนักเตะจาก ESPN ได้ ลองเปิดแหล่งข้อมูลต้นฉบับ' : 'ไม่พบนักเตะตามตำแหน่งหรือชื่อที่ค้นหา'}</p>`;
-  const warning = state.squadFailed || state.squad?.stale || !players.length;
+  }).join('') : `<p class="feature-loading">${state.squadFailed || !players.length ? 'ยังโหลดรายชื่อนักเตะไม่ได้ กรุณาตรวจเว็บไซต์พรีเมียร์ลีก' : 'ไม่พบนักเตะตามตำแหน่งหรือชื่อที่ค้นหา'}</p>`;
+  const warning = state.squadFailed || state.squad?.stale || state.squad?.partial || !players.length;
   $('#squadHealth').classList.toggle('has-warning', Boolean(warning));
-  $('#squadHealth').textContent = warning ? 'รายชื่อนักเตะอาจไม่ครบหรือไม่ล่าสุด โปรดตรวจสอบ ESPN' : 'รายชื่อจาก ESPN · ค่า “—” หมายถึงแหล่งข้อมูลไม่ส่งสถิตินั้น ไม่ใช่ 0';
+  $('#squadHealth').textContent = warning ? 'รายชื่อพรีเมียร์ลีกฤดูกาล 2026/27 แสดงครบ แต่ ESPN อาจไม่ส่งรูปหรือสถิติบางคน' : 'รายชื่อจากพรีเมียร์ลีก 2026/27 · “—” หมายถึงไม่มีข้อมูลสถิติ';
 }
 function safePlayerHeadshot(input) {
   try { const u = new URL(input); return u.protocol === 'https:' && u.hostname === 'a.espncdn.com' &&

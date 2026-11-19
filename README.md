@@ -146,3 +146,10 @@ npm run serve
 - ระบบดึงข่าว/ภาพทุก 10 นาที, สกอร์เมื่อแข่งทุก 45 วินาที, ตรวจเวลา/ความสดของข้อมูล และ Netlify Scheduled monitor ยังทำงานตามเดิม
 - ปุ่มรีเฟรชด้วยมือและลิงก์แหล่งข่าวยังใช้งานได้; ผู้ดูแลตรวจสถานะผ่าน `/api/health` และ Netlify Logs ได้ แม้ซ่อนรายละเอียดจากหน้าหลัก
 - ป้าย LIVE ที่แสดงเฉพาะเมื่อมีการแข่งขันจริงยังแสดงได้; ไม่อ้างว่าเว็บไซต์เป็น real-time streaming
+
+
+## UNITED PLAYERS: verified Premier League squad backup (19 Nov 2026)
+- Membership, positions, and shirt numbers are based on [Premier League 2026/27 Manchester United squad](https://www.premierleague.com/en/clubs/1/manchester-united/squad), verified 19 Nov 2026; the checked-season snapshot contains 33 listed players.
+- ESPN's roster endpoint is an optional photo and stats supplement. Its failures do not erase players from the official Premier League season snapshot.
+- Stats absent from ESPN remain null (shown as —). Only exact accent-normalized name matches are enriched. No guesses or extra former players are added.
+- This is a 2026/27 season snapshot, not a guarantee of instant transfers or daily membership updates. Review the official roster when squad lists change.
