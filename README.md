@@ -128,3 +128,11 @@ npm run serve
 - Auto-update: squad every 3 hours on active browser tab and server memory cache ~3 hours; transfer RSS every 10 minutes. First page load includes both. Scheduled monitor checks both every 30 minutes after production deploy and records results to Netlify Logs; this does not guarantee upstream content updates or push notifications.
 - Endpoints for post-deploy testing: `/api/squad` (`players`, `hasData`, `updatedAt`), `/api/transfers` (`articles`, `clubCount`, `reportedCount`, `partial`), `/api/health` (now six service statuses).
 - ESPN's soccer endpoint and player headshots are undocumented third-party services. Verify license / hotlink use and accuracy before commercial use; photo rights remain with rights owners. No API key is needed for this prototype.
+
+
+## ตรวจข้อมูล MATCHDAY (แก้แหล่งโปรแกรมสำรอง 19 พ.ย. 2026)
+- หาก ESPN endpoint รายการแข่งขันเดิมส่งเฉพาะผลย้อนหลัง เว็บจะตรวจ endpoint โปรแกรมทุกถ้วยอีกแหล่งจาก ESPN ควบคู่กัน
+- ยอมรับรหัสแมนยูเมื่อ ESPN ส่ง team ID ใน competitor.id แทน competitor.team.id แต่ยังต้องตรงกับรหัสทีม 360
+- `/api/matches` มี `diagnostics` (จำนวน event จากลีก, จำนวนที่รับมา, สถานะ fallback, จำนวนเกมล่วงหน้า) เพื่อช่วยวิเคราะห์เมื่อไม่พบเกม
+- หากไม่มีเกมล่วงหน้าหรือ ESPN ไม่ตอบกลับ เว็บไม่สร้างวันแข่ง/สกอร์ขึ้นเอง
+- เมื่อไม่มีข้อมูลเกมถัดไป API cache เหลือ 1 นาทีเพื่อให้ลองดึงใหม่ได้เร็วขึ้น

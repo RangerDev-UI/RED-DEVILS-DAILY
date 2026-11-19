@@ -91,3 +91,39 @@ test('logo data survives through the match API', async () => {
   assert.equal(data.upcoming[0].logoUnited, 'https://a.espncdn.com/i/teamlogos/soccer/500/360.png');
   assert.equal(data.upcoming[0].logoOpponent, 'https://a.espncdn.com/i/teamlogos/soccer/500/364.png');
 });
+
+test('fallback fixtures feed restores next match when league schedules only include results', async () => {
+  const now = new Date('2026-11-19T12:00:00Z');
+  const past = makeEvent('401999010', '2026-11-08T14:00:00Z', 'post');
+  const future = makeEvent('401999011', '2026-11-22T16:30:00Z', 'pre', false);
+  for (const c of future.competitions[0].competitors) {
+    c.id = c.team.id;
+    delete c.team.id;
+  }
+  const calls = [];
+  const fetchStub = async (url) => {
+    calls.push(String(url));
+    if (String(url).includes('/soccer/all/teams/360/schedule')) {
+      return new Response(JSON.stringify({ events: [future] }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ events: [past] }), { status: 200 });
+  };
+  const data = await loadMatches(fetchStub, now);
+  assert.equal(data.upcoming.length, 1);
+  assert.equal(data.upcoming[0].id, '401999011');
+  assert.equal(data.upcoming[0].opponent, 'Liverpool');
+  assert.equal(data.results.length, 1);
+  assert.equal(data.diagnostics.fallback, 'used');
+  assert.equal(data.diagnostics.leagueEvents, 5);
+  assert.ok(calls.some(url => url.includes('site.web.api.espn.com')));
+});
+
+test('empty ESPN feeds show no invented matches and report diagnostics', async () => {
+  const data = await loadMatches(async () => new Response(JSON.stringify({ events: [] }), { status: 200 }),
+    new Date('2026-11-19T12:00:00Z'));
+  assert.equal(data.hasData, false);
+  assert.deepEqual(data.upcoming, []);
+  assert.deepEqual(data.results, []);
+  assert.equal(data.diagnostics.leagueEvents, 0);
+  assert.equal(data.diagnostics.fallback, 'unavailable');
+});

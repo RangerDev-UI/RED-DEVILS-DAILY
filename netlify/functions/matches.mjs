@@ -12,7 +12,7 @@ export async function handler() {
       return respond({ ...cached, stale: true, partial: true, errors: ['แหล่งข้อมูลยังไม่ตอบกลับ'] });
     }
     cached = payload;
-    expiry = Date.now() + (payload.live?.length ? 60_000 : 10 * 60_000);
+    expiry = Date.now() + (payload.live?.length || !payload.upcoming?.length ? 60_000 : 10 * 60_000);
     return respond(payload);
   } catch {
     return respond(cached ? { ...cached, stale: true, partial: true } : {
