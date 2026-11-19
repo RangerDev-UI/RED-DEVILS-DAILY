@@ -41,3 +41,13 @@
   from = "/api/health"
   to = "/.netlify/functions/health"
   status = 200
+
+[[redirects]]
+  from = "/api/squad"
+  to = "/.netlify/functions/squad"
+  status = 200
+
+[[redirects]]
+  from = "/api/transfers"
+  to = "/.netlify/functions/transfers"
+  status = 200

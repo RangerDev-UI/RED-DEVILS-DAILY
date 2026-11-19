@@ -33,6 +33,8 @@
         <a href="#home" class="nav-link is-active">หน้าแรก</a>
         <a href="#matches" class="nav-link">ตารางแข่ง</a>
         <a href="#standings" class="nav-link">ตารางคะแนน</a>
+        <a href="#squad" class="nav-link">นักเตะ</a>
+        <a href="#transfers" class="nav-link">ตลาดนักเตะ</a>
         <a href="#latest" class="nav-link">ข่าวล่าสุด</a>
         <a href="#photos" class="nav-link">แกลเลอรีภาพ</a>
         <a href="#sources" class="nav-link">แหล่งข่าว</a>
@@ -105,6 +107,21 @@
       <div class="table-scroll" tabindex="0" aria-label="เลื่อนดูตารางคะแนนได้"><table class="league-table"><thead><tr><th scope="col">อันดับ</th><th scope="col" class="table-team-name">สโมสร</th><th scope="col">แข่ง</th><th scope="col">ชนะ</th><th scope="col">เสมอ</th><th scope="col">แพ้</th><th scope="col">ได้</th><th scope="col">เสีย</th><th scope="col">ผลต่าง</th><th scope="col">แต้ม</th></tr></thead><tbody id="standingsBody"><tr><td colspan="10" class="standings-loading">กำลังโหลดตารางคะแนนจริงจาก ESPN...</td></tr></tbody></table></div>
       <div class="standings-footer"><p id="standingsHealth" role="status">ตารางคะแนนอัปเดตตามแหล่งข้อมูลจริง ไม่ใช่ข้อมูลจำลอง</p><a href="https://www.espn.com/soccer/standings/_/league/eng.1" target="_blank" rel="noopener noreferrer">เปิดตารางคะแนน ESPN ↗</a></div>
     </section>
+
+
+    <section id="squad" class="container squad-section" aria-label="รายชื่อนักเตะแมนเชสเตอร์ ยูไนเต็ด">
+      <div class="section-header"><div><div class="section-kicker">THE SQUAD <span>/</span> PLAYERS</div><h2>UNITED <em>PLAYERS</em><span class="red-period">.</span> <small>รายชื่อนักเตะ</small></h2><p class="feature-explainer">รายชื่อนักเตะชุดที่แหล่งข้อมูล ESPN ระบุ รูปผู้เล่น เบอร์เสื้อ ตำแหน่ง และสถิติเมื่อมีข้อมูลจริง</p></div><div class="table-source"><span id="squadCount">กำลังโหลด...</span><span id="squadSynced">รอตรวจข้อมูล</span></div></div>
+      <div class="feature-controls"><div class="feature-tabs" id="squadTabs" role="group" aria-label="กรองตำแหน่งนักเตะ"><button type="button" class="feature-tab active" data-squad-filter="all" aria-pressed="true">ทั้งหมด</button><button type="button" class="feature-tab" data-squad-filter="ผู้รักษาประตู" aria-pressed="false">ผู้รักษาประตู</button><button type="button" class="feature-tab" data-squad-filter="กองหลัง" aria-pressed="false">กองหลัง</button><button type="button" class="feature-tab" data-squad-filter="กองกลาง" aria-pressed="false">กองกลาง</button><button type="button" class="feature-tab" data-squad-filter="กองหน้า" aria-pressed="false">กองหน้า</button></div><label class="feature-search"><span aria-hidden="true">⌕</span><input id="playerSearch" type="search" placeholder="ค้นหาชื่อนักเตะ..." aria-label="ค้นหานักเตะ" autocomplete="off" /></label></div>
+      <div class="squad-grid" id="squadGrid" aria-live="polite"><p class="feature-loading">กำลังตรวจสอบรายชื่อนักเตะจาก ESPN...</p></div>
+      <div class="feature-footnote"><p id="squadHealth" role="status">สถิติที่แหล่งข้อมูลไม่มีจะแสดง — ไม่คาดเดาเบอร์หรือสถิติ</p><a href="https://www.espn.com/soccer/team/squad/_/id/360/manchester-united" target="_blank" rel="noopener noreferrer">ดูรายชื่อจาก ESPN ↗</a></div>
+    </section>
+
+    <section id="transfers" class="transfer-section" aria-label="ข่าวตลาดซื้อขายนักเตะแมนเชสเตอร์ ยูไนเต็ด"><div class="container">
+      <div class="section-header"><div><div class="section-kicker">TRANSFER DESK <span>/</span> NEWS</div><h2>TRANSFER <em>WATCH</em><span class="red-period">.</span> <small>ตลาดนักเตะ</small></h2><p class="feature-explainer">แยกประกาศจากสโมสร กับรายงานจากสื่อ ไม่ยกข่าวลือเป็นดีลยืนยัน</p></div><div class="table-source"><span id="transferCount">กำลังโหลด...</span><span id="transferSynced">รอตรวจข่าว</span></div></div>
+      <div class="feature-tabs transfer-tabs" id="transferTabs" role="group" aria-label="เลือกประเภทข่าวซื้อขาย"><button type="button" class="feature-tab active" data-transfer-filter="all" aria-pressed="true">ทุกข่าว</button><button type="button" class="feature-tab" data-transfer-filter="club" aria-pressed="false">✓ ประกาศจากสโมสร</button><button type="button" class="feature-tab" data-transfer-filter="reported" aria-pressed="false">รายงาน / ข่าวลือ</button></div>
+      <div id="transferGrid" class="transfer-grid" aria-live="polite"><p class="feature-loading">กำลังตรวจข่าวตลาดซื้อขายจากแหล่งต้นฉบับ...</p></div>
+      <div class="feature-footnote"><p id="transferHealth" role="status">ป้าย “ประกาศจากสโมสร” ใช้เฉพาะข่าวจากเว็บไซต์สโมสรที่เข้าเงื่อนไขพาดหัว ข่าวสื่ออื่นยังต้องรอยืนยัน</p><a href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer">ข่าวสโมสรต้นฉบับ ↗</a></div>
+    </div></section>
 
     <section class="container data-health-section" aria-label="สถานะความสดของข้อมูล"><div class="health-header"><div><div class="section-kicker">DATA MONITOR <span>/</span> AUTO CHECK</div><h2>สถานะข้อมูล<span class="red-period">.</span></h2><p>แสดงเวลาเช็กข้อมูลจริงและเตือนข้อมูลเก่า ไม่รับประกันว่าต้นทางมีข่าวหรือรูปใหม่ทุกครั้ง</p></div><div id="healthOverall" class="health-overall" role="status">กำลังตรวจ...</div></div><div class="health-grid" id="healthGrid" aria-live="polite"></div><p class="health-note">ระบบตรวจแหล่งข้อมูลทุก 30 นาทีเมื่อ Netlify Scheduled Function ทำงานบน Production (บันทึกผลใน Logs ไม่ส่งแจ้งเตือน) และเว็บตรวจซ้ำเมื่อมีคนเปิดหน้า</p></section>
 

@@ -2,10 +2,12 @@ import { handler as news } from './news.mjs';
 import { handler as photos } from './photos.mjs';
 import { handler as matches } from './matches.mjs';
 import { handler as standings } from './standings.mjs';
+import { handler as squad } from './squad.mjs';
+import { handler as transfers } from './transfers.mjs';
 import { evaluateHealth } from '../../lib/health.mjs';
 export async function checkHealth() {
-  const names = ['news', 'photos', 'matches', 'standings'];
-  const handlers = [news, photos, matches, standings];
+  const names = ['news', 'photos', 'matches', 'standings', 'squad', 'transfers'];
+  const handlers = [news, photos, matches, standings, squad, transfers];
   const outputs = await Promise.allSettled(handlers.map(handler => handler()));
   const payloads = Object.fromEntries(outputs.map((r, index) => {
     try { return [names[index], r.status === 'fulfilled' ? JSON.parse(r.value.body) : null]; }

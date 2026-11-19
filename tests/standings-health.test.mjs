@@ -62,11 +62,13 @@ test('health report separates check timestamps, partial feeds, stale and empty d
     news:{articles:[{publishedAt:'2026-11-19T10:00:00Z'}],updatedAt:latest, errors:[]},
     photos:{photos:[{}],updatedAt:latest},
     matches:{upcoming:[],hasData:true,updatedAt:latest},
-    standings:{groups:[{}],hasData:true,updatedAt:latest}
+    standings:{groups:[{}],hasData:true,updatedAt:latest},
+    squad:{players:[{id:'1'}],hasData:true,updatedAt:latest},
+    transfers:{articles:[],hasData:false,updatedAt:latest}
   };
   const healthy=evaluateHealth(base,now);
   assert.equal(healthy.status,'ok');
-  assert.equal(healthy.services.length,4);
+  assert.equal(healthy.services.length,6);
   assert.equal(healthy.latestPublishedAt,'2026-11-19T10:00:00.000Z');
   const partial=evaluateHealth({...base,news:{...base.news,errors:[{source:'guardian'}]}},now);
   assert.equal(partial.services[0].status,'partial');

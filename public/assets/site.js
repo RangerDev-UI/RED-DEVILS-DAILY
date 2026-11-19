@@ -1,6 +1,8 @@
 const REFRESH_MS = 10 * 60 * 1000;
 const LIVE_REFRESH_MS = 45_000;
 const NEAR_KICKOFF_REFRESH_MS = 90_000;
+const SQUAD_REFRESH_MS = 3 * 3600_000;
+const TRANSFER_REFRESH_MS = 10 * 60_000;
 const STANDINGS_REFRESH_MS = 30 * 60 * 1000;
 const FALLBACK = {
   image: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Old_Trafford_outside_20060726_1.jpg',
@@ -21,8 +23,8 @@ const categories = {
 
 const state = {
   articles: [], photos: [], loading: false, loadedOnce: false,
-  filter: 'all', search: '', visible: 12, galleryVisible: 11, photoFilter: 'all', heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS, nextMatchRefreshAt: Date.now() + REFRESH_MS, nextStandingsRefreshAt: Date.now() + STANDINGS_REFRESH_MS, matchLoading: false, standingsLoading: false,
-  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false, matchesFailed: false, matches: null, standingsFailed: false, standings: null, photosUpdatedAt: null, dataHealth: null
+  filter: 'all', search: '', visible: 12, galleryVisible: 11, photoFilter: 'all', heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS, nextMatchRefreshAt: Date.now() + REFRESH_MS, nextStandingsRefreshAt: Date.now() + STANDINGS_REFRESH_MS, nextSquadRefreshAt: Date.now() + SQUAD_REFRESH_MS, nextTransfersRefreshAt: Date.now() + TRANSFER_REFRESH_MS, squadFilter: 'all', transferFilter: 'all', playerSearch: '', matchLoading: false, standingsLoading: false,
+  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false, matchesFailed: false, matches: null, standingsFailed: false, standings: null, photosUpdatedAt: null, dataHealth: null, squadFailed: false, squad: null, transfersFailed: false, transfers: null, squadLoading: false, transfersLoading: false
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -272,13 +274,51 @@ function renderStandings() {
   $('#standingsHealth').textContent = state.standingsFailed ? 'การเชื่อมต่อตารางคะแนนล้มเหลว ข้อมูลเดิมอาจไม่ล่าสุด' : data?.stale ? 'กำลังแสดงตารางคะแนนเดิม เพราะต้นทางไม่ตอบกลับ' : rows.length ? 'ตารางคะแนนจาก ESPN · อาจเปลี่ยนหลังจบแมตช์ กรุณายืนยันจากต้นทาง' : 'ยังไม่พบข้อมูลยืนยันจากแหล่งที่มา';
   $('#standingsHealth').classList.toggle('has-warning', state.standingsFailed || Boolean(data?.stale) || !rows.length);
 }
+
+function renderSquad() {
+  const players = Array.isArray(state.squad?.players) ? state.squad.players : [];
+  const filtered = players.filter(player => (state.squadFilter === 'all' || player.group === state.squadFilter) &&
+    (!state.playerSearch || String(player.name).toLowerCase().includes(state.playerSearch)));
+  $('#squadCount').textContent = `${players.length} นักเตะจาก ESPN`;
+  $('#squadSynced').textContent = state.squad?.updatedAt ? `เช็ก ${matchDate(state.squad.updatedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} น.` : 'ยังไม่พบเวลาอัปเดต';
+  $('#squadGrid').innerHTML = filtered.length ? filtered.map(p => {
+    const img = safePlayerHeadshot(p.headshot);
+    const initials = String(p.name || '').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+    const val = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 ? escapeHtml(String(v)) : '—';
+    return `<article class="player-card"><div class="player-image"><span class="player-number">${escapeHtml(p.jersey || 'MU')}</span><span class="player-silhouette">${escapeHtml(initials)}</span>${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async" class="player-photo">` : ''}</div><div class="player-content"><span class="player-position">${escapeHtml(p.position || p.group || 'ไม่ระบุ')}</span><h3 class="player-name">${escapeHtml(p.name)}</h3><span class="player-number-small">เบอร์ ${escapeHtml(p.jersey || '—')}</span><div class="player-stats"><span><b>${val(p.appearances)}</b>นัด</span><span><b>${val(p.goals)}</b>ประตู</span><span><b>${val(p.assists)}</b>แอสซิสต์</span></div><a class="player-profile" href="${escapeHtml(safeUrl(p.profileUrl))}" target="_blank" rel="noopener noreferrer">ข้อมูลผู้เล่น ↗</a></div></article>`;
+  }).join('') : `<p class="feature-loading">${state.squadFailed || !players.length ? 'ยังไม่สามารถยืนยันรายชื่อนักเตะจาก ESPN ได้ ลองเปิดแหล่งข้อมูลต้นฉบับ' : 'ไม่พบนักเตะตามตำแหน่งหรือชื่อที่ค้นหา'}</p>`;
+  const warning = state.squadFailed || state.squad?.stale || !players.length;
+  $('#squadHealth').classList.toggle('has-warning', Boolean(warning));
+  $('#squadHealth').textContent = warning ? 'รายชื่อนักเตะอาจไม่ครบหรือไม่ล่าสุด โปรดตรวจสอบ ESPN' : 'รายชื่อจาก ESPN · ค่า “—” หมายถึงแหล่งข้อมูลไม่ส่งสถิตินั้น ไม่ใช่ 0';
+}
+function safePlayerHeadshot(input) {
+  try { const u = new URL(input); return u.protocol === 'https:' && u.hostname === 'a.espncdn.com' &&
+    /^\/i\/headshots\/soccer\/players\/(?:full|large|small)\/\d{1,12}\.png$/.test(u.pathname) ? u.href : ''; }
+  catch { return ''; }
+}
+function renderTransfers() {
+  const all = Array.isArray(state.transfers?.articles) ? state.transfers.articles : [];
+  const filtered = all.filter(a => state.transferFilter === 'all' || a.transferStatus === state.transferFilter);
+  $('#transferCount').textContent = `${all.length} ข่าว · ประกาศสโมสร ${all.filter(a => a.transferStatus === 'club').length}`;
+  $('#transferSynced').textContent = state.transfers?.updatedAt ? `เช็ก ${matchDate(state.transfers.updatedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} น.` : 'ยังไม่พบเวลาอัปเดต';
+  $('#transferGrid').innerHTML = filtered.length ? filtered.map(article => {
+    const club = article.transferStatus === 'club';
+    return `<article class="transfer-card"><div class="transfer-card-top"><span class="transfer-chip ${club ? 'is-club' : ''}">${club ? '✓ ประกาศจากสโมสร' : 'รายงาน / ข่าวลือ'}</span><span class="transfer-date">${escapeHtml(relativeTime(article.publishedAt))}</span></div><h3 class="transfer-title"><a href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(article.title)}</a></h3>${article.summary ? `<p class="transfer-summary">${escapeHtml(article.summary)}</p>` : '<p class="transfer-summary"></p>'}<div class="transfer-footer"><span>${escapeHtml(article.source)}</span><a href="${escapeHtml(safeUrl(article.url))}" target="_blank" rel="noopener noreferrer">อ่านต้นฉบับ ↗</a></div></article>`;
+  }).join('') : `<p class="feature-loading">${state.transfersFailed ? 'ยังไม่สามารถดึงข่าวตลาดนักเตะได้' : state.transferFilter === 'club' ? 'ยังไม่พบประกาศยืนยันจากสโมสรในข่าวล่าสุด' : state.transferFilter === 'reported' ? 'ยังไม่มีรายงานในช่วงเวลาที่ค้นหา' : 'ยังไม่พบหัวข้อข่าวซื้อขายใหม่จากฟีดที่เชื่อมต่อ'}</p>`;
+  const warning = state.transfersFailed || state.transfers?.stale || state.transfers?.partial;
+  $('#transferHealth').classList.toggle('has-warning', Boolean(warning));
+  $('#transferHealth').textContent = warning ? 'แหล่งข่าวบางส่วนตอบกลับไม่ได้ ข้อมูลอาจไม่ล่าสุด' : 'ประกาศสโมสร = พาดหัวจาก ManUtd.com ที่เข้าเงื่อนไข · ข่าวสื่ออื่นไม่ใช่ดีลยืนยัน';
+}
+
 function renderDataHealth() {
   const now = Date.now();
   const checks = [
     { name: 'ข่าว', checked: state.updatedAt, failed: state.newsFailed || state.errors.length > 0, available: state.articles.length > 0, maxAge: 25*60_000 },
     { name: 'รูปภาพ', checked: state.photosUpdatedAt, failed: state.photosFailed, available: state.photos.length > 0, maxAge: 35*60_000 },
     { name: 'การแข่งขัน', checked: state.matches?.updatedAt, failed: state.matchesFailed || state.matches?.partial || state.matches?.stale, available: state.matches?.hasData, maxAge: 25*60_000 },
-    { name: 'ตารางคะแนน', checked: state.standings?.updatedAt, failed: state.standingsFailed || state.standings?.stale, available: state.standings?.hasData, maxAge: 2*3600_000 }
+    { name: 'ตารางคะแนน', checked: state.standings?.updatedAt, failed: state.standingsFailed || state.standings?.stale, available: state.standings?.hasData, maxAge: 2*3600_000 },
+    { name: 'นักเตะ', checked: state.squad?.updatedAt, failed: state.squadFailed || state.squad?.stale, available: state.squad?.hasData, maxAge: 6*3600_000 },
+    { name: 'ซื้อขาย', checked: state.transfers?.updatedAt, failed: state.transfersFailed || state.transfers?.stale || state.transfers?.partial, available: !!state.transfers?.updatedAt, maxAge: 25*60_000 }
   ];
   let warnings = 0;
   $('#healthGrid').innerHTML = checks.map(item => {
@@ -320,7 +360,7 @@ function renderHeader() {
   $('#feedNotice').textContent = message;
 }
 function renderAll() {
-  leadStory(); featuredStories(); renderNews(); renderMatches(); renderMatchNews(); renderStandings(); renderGallery(); renderHeader(); renderDataHealth();
+  leadStory(); featuredStories(); renderNews(); renderMatches(); renderMatchNews(); renderStandings(); renderSquad(); renderTransfers(); renderGallery(); renderHeader(); renderDataHealth();
 }
 function updateCountdown() {
   const timeLeft = Math.max(0, state.nextRefreshAt - Date.now());
@@ -342,11 +382,13 @@ async function refresh() {
   if (state.loading) return;
   state.loading = true;
   $('#headerRefresh').classList.add('spinning');
-  const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos'), fetchJson('/api/matches'), fetchJson('/api/standings')]);
+  const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos'), fetchJson('/api/matches'), fetchJson('/api/standings'), fetchJson('/api/squad'), fetchJson('/api/transfers')]);
   state.newsFailed = results[0].status === 'rejected';
   state.photosFailed = results[1].status === 'rejected';
   state.matchesFailed = results[2].status === 'rejected';
   state.standingsFailed = results[3].status === 'rejected';
+  state.squadFailed = results[4].status === 'rejected';
+  state.transfersFailed = results[5].status === 'rejected';
   if (results[0].status === 'fulfilled' && Array.isArray(results[0].value.articles)) {
     state.articles = results[0].value.articles;
     state.updatedAt = results[0].value.updatedAt;
@@ -359,8 +401,12 @@ async function refresh() {
   }
   if (results[2].status === 'fulfilled') state.matches = results[2].value;
   if (results[3].status === 'fulfilled') state.standings = results[3].value;
+  if (results[4].status === 'fulfilled') state.squad = results[4].value;
+  if (results[5].status === 'fulfilled') state.transfers = results[5].value;
   state.nextMatchRefreshAt = Date.now() + matchRefreshDelay();
   state.nextStandingsRefreshAt = Date.now() + STANDINGS_REFRESH_MS;
+  state.nextSquadRefreshAt = Date.now() + SQUAD_REFRESH_MS;
+  state.nextTransfersRefreshAt = Date.now() + TRANSFER_REFRESH_MS;
   state.loadedOnce = true;
   state.nextRefreshAt = Date.now() + REFRESH_MS;
   state.loading = false;
@@ -393,15 +439,44 @@ async function refreshStandingsOnly() {
     renderStandings(); renderDataHealth();
   }
 }
+async function refreshSquadOnly() {
+  if (state.loading || state.squadLoading) return;
+  state.squadLoading = true;
+  try { state.squad = await fetchJson('/api/squad'); state.squadFailed = false; }
+  catch { state.squadFailed = true; }
+  finally { state.squadLoading = false; state.nextSquadRefreshAt = Date.now() + SQUAD_REFRESH_MS; renderSquad(); renderDataHealth(); }
+}
+async function refreshTransfersOnly() {
+  if (state.loading || state.transfersLoading) return;
+  state.transfersLoading = true;
+  try { state.transfers = await fetchJson('/api/transfers'); state.transfersFailed = false; }
+  catch { state.transfersFailed = true; }
+  finally { state.transfersLoading = false; state.nextTransfersRefreshAt = Date.now() + TRANSFER_REFRESH_MS; renderTransfers(); renderDataHealth(); }
+}
 function refreshIfNeeded() {
   if (document.hidden) return;
   const now = Date.now();
   if (now >= state.nextRefreshAt) { refresh(); return; }
   if (now >= state.nextMatchRefreshAt) refreshMatchesOnly();
   if (now >= state.nextStandingsRefreshAt) refreshStandingsOnly();
+  if (now >= state.nextSquadRefreshAt) refreshSquadOnly();
+  if (now >= state.nextTransfersRefreshAt) refreshTransfersOnly();
 }
 function init() {
   $('#todayLabel').textContent = todayText();
+  $('#squadTabs').addEventListener('click', event => {
+    const button = event.target.closest('[data-squad-filter]'); if (!button) return;
+    state.squadFilter = button.dataset.squadFilter;
+    document.querySelectorAll('#squadTabs .feature-tab').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
+    renderSquad();
+  });
+  $('#playerSearch').addEventListener('input', event => { state.playerSearch = event.target.value.toLowerCase().trim(); renderSquad(); });
+  $('#transferTabs').addEventListener('click', event => {
+    const button = event.target.closest('[data-transfer-filter]'); if (!button) return;
+    state.transferFilter = button.dataset.transferFilter;
+    document.querySelectorAll('#transferTabs .feature-tab').forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
+    renderTransfers();
+  });
   $('#categoryTabs').addEventListener('click', (event) => {
     const button = event.target.closest('[data-category]');
     if (!button) return;
@@ -457,7 +532,7 @@ function init() {
     if (!$('#photoLightbox').hidden && e.key === 'ArrowRight') changePhoto(1);
   });
   // Preserve visual fallback if external image servers are unreachable.
-  document.addEventListener('error', e => { if (e.target?.tagName === 'IMG') e.target.style.opacity = '0'; }, true);
+  document.addEventListener('error', e => { if (e.target?.tagName === 'IMG') { e.target.style.opacity = '0'; if (e.target.classList.contains('player-photo')) e.target.hidden = true; } }, true);
   $('#mobileMenu').addEventListener('click', () => {
     const isOpen = $('#mainNav').classList.toggle('open');
     $('#mobileMenu').setAttribute('aria-expanded', String(isOpen));
