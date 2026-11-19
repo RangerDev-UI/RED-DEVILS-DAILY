@@ -1,4 +1,7 @@
 const REFRESH_MS = 10 * 60 * 1000;
+const LIVE_REFRESH_MS = 45_000;
+const NEAR_KICKOFF_REFRESH_MS = 90_000;
+const STANDINGS_REFRESH_MS = 30 * 60 * 1000;
 const FALLBACK = {
   image: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Old_Trafford_outside_20060726_1.jpg',
   original: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Old_Trafford_outside_20060726_1.jpg',
@@ -18,8 +21,8 @@ const categories = {
 
 const state = {
   articles: [], photos: [], loading: false, loadedOnce: false,
-  filter: 'all', search: '', visible: 12, galleryVisible: 11, photoFilter: 'all', heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS,
-  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false, matchesFailed: false, matches: null
+  filter: 'all', search: '', visible: 12, galleryVisible: 11, photoFilter: 'all', heroIndex: 0, bookmarks: [], nextRefreshAt: Date.now() + REFRESH_MS, nextMatchRefreshAt: Date.now() + REFRESH_MS, nextStandingsRefreshAt: Date.now() + STANDINGS_REFRESH_MS, matchLoading: false, standingsLoading: false,
+  updatedAt: null, errors: [], sources: [], activePhoto: null, activePhotoIndex: 0, photoFallback: false, newsFailed: false, photosFailed: false, matchesFailed: false, matches: null, standingsFailed: false, standings: null, photosUpdatedAt: null, dataHealth: null
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -241,6 +244,55 @@ function renderMatches() {
     !data?.hasData ? 'ยังไม่มีข้อมูลจาก ESPN ในขณะนี้ (ระบบไม่ได้สร้างสกอร์จำลอง)' :
     'เวลาแข่งขันแสดงตามเวลาไทย · ข้อมูลอาจล่าช้าและโปรแกรมเปลี่ยนได้ กรุณายืนยันกับแหล่งข่าวก่อนใช้งาน';
 }
+function isKickoffNear(data, now = Date.now()) {
+  return Boolean((data?.upcoming || []).some(m => {
+    const delta = new Date(m.date).getTime() - now;
+    return delta < 35 * 60_000 && delta > -3 * 60 * 60_000;
+  }));
+}
+function matchRefreshDelay() {
+  return state.matches?.live?.length ? LIVE_REFRESH_MS : isKickoffNear(state.matches) ? NEAR_KICKOFF_REFRESH_MS : REFRESH_MS;
+}
+function renderStandings() {
+  const data = state.standings;
+  $('#standingsSynced').textContent = data?.updatedAt ? 'เช็ก ' + matchDate(data.updatedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' น.' : 'ยังไม่ยืนยันข้อมูล';
+  $('#standingsSeason').textContent = data?.season ? 'ฤดูกาล ' + data.season : 'พรีเมียร์ลีก';
+  const groups = Array.isArray(data?.groups) ? data.groups : [];
+  const rows = groups.flatMap((group, groupIndex) => [
+    ...(groups.length > 1 ? [`<tr class="standings-group"><td colspan="10">${escapeHtml(group.name)}</td></tr>`] : []),
+    ...(Array.isArray(group.rows) ? group.rows : []).map(team => {
+      const cls = team.id === '360' ? 'is-united' : '';
+      const logo = safeTeamCrest(team.logo);
+      const name = escapeHtml(team.name);
+      const number = val => val == null || !Number.isFinite(Number(val)) ? '—' : escapeHtml(String(val));
+      return `<tr class="${cls}"><td>${number(team.rank)}</td><th scope="row" class="table-team-name"><span class="league-club">${teamBadge(logo, teamInitials(name))}<span>${name}</span>${team.id === '360' ? '<b>MU</b>' : ''}</span></th><td>${number(team.played)}</td><td>${number(team.won)}</td><td>${number(team.drawn)}</td><td>${number(team.lost)}</td><td>${number(team.gf)}</td><td>${number(team.ga)}</td><td>${team.gd > 0 ? '+' + number(team.gd) : number(team.gd)}</td><td class="league-points">${number(team.points)}</td></tr>`;
+    })
+  ]);
+  $('#standingsBody').innerHTML = rows.length ? rows.join('') : `<tr><td colspan="10" class="standings-loading">ยังไม่สามารถยืนยันตารางคะแนนฤดูกาลปัจจุบันได้ กรุณาดูต้นทาง ESPN</td></tr>`;
+  $('#standingsHealth').textContent = state.standingsFailed ? 'การเชื่อมต่อตารางคะแนนล้มเหลว ข้อมูลเดิมอาจไม่ล่าสุด' : data?.stale ? 'กำลังแสดงตารางคะแนนเดิม เพราะต้นทางไม่ตอบกลับ' : rows.length ? 'ตารางคะแนนจาก ESPN · อาจเปลี่ยนหลังจบแมตช์ กรุณายืนยันจากต้นทาง' : 'ยังไม่พบข้อมูลยืนยันจากแหล่งที่มา';
+  $('#standingsHealth').classList.toggle('has-warning', state.standingsFailed || Boolean(data?.stale) || !rows.length);
+}
+function renderDataHealth() {
+  const now = Date.now();
+  const checks = [
+    { name: 'ข่าว', checked: state.updatedAt, failed: state.newsFailed || state.errors.length > 0, available: state.articles.length > 0, maxAge: 25*60_000 },
+    { name: 'รูปภาพ', checked: state.photosUpdatedAt, failed: state.photosFailed, available: state.photos.length > 0, maxAge: 35*60_000 },
+    { name: 'การแข่งขัน', checked: state.matches?.updatedAt, failed: state.matchesFailed || state.matches?.partial || state.matches?.stale, available: state.matches?.hasData, maxAge: 25*60_000 },
+    { name: 'ตารางคะแนน', checked: state.standings?.updatedAt, failed: state.standingsFailed || state.standings?.stale, available: state.standings?.hasData, maxAge: 2*3600_000 }
+  ];
+  let warnings = 0;
+  $('#healthGrid').innerHTML = checks.map(item => {
+    const t = new Date(item.checked || '').getTime();
+    const ageMs = Number.isFinite(t) ? now - t : Infinity;
+    const stateName = !item.available || ageMs > item.maxAge ? 'bad' : item.failed ? 'warn' : 'good';
+    if (stateName !== 'good') warnings++;
+    const label = stateName === 'bad' ? 'ไม่มีข้อมูลใหม่ที่ยืนยันได้' : stateName === 'warn' ? 'ข้อมูลบางส่วนไม่พร้อม' : 'เชื่อมต่อปกติ';
+    return `<div class="health-card ${stateName}"><span class="health-dot"></span><strong>${item.name}</strong><span>${label}</span><small>ตรวจสอบ: ${item.checked ? matchDate(item.checked, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' น.' : 'ยังไม่ได้ข้อมูล'}</small></div>`;
+  }).join('');
+  $('#healthOverall').textContent = !state.loadedOnce ? 'กำลังตรวจ...' : warnings ? `พบ ${warnings} รายการต้องตรวจสอบ` : 'แหล่งข้อมูลตอบกลับปกติ';
+  $('#healthOverall').classList.toggle('has-warning', Boolean(warnings));
+  $('#liveCadence').textContent = state.matches?.live?.length ? 'กำลังแข่ง · เช็กทุก 45 วินาที' : isKickoffNear(state.matches) ? 'ใกล้แข่ง · เช็กทุก 90 วินาที' : 'เช็กทุก 10 นาที';
+}
 function renderMatchNews() {
   const before = /preview|pre.match|build.up|predicted|line.up|team news|kick.off|ahead of|ก่อนเกม|พรีวิว|คาดการณ์|จัดทัพ|ตัวจริง|เตรียมพบ|ก่อนพบ/i;
   const after = /match report|full.time|reaction|highlights|post.match|beats?|defeats?|draws?|wins?|results?|score|recap|หลังเกม|ผลบอล|จบเกม|พ่าย|เอาชนะ|ไฮไลท์|เสมอ/i;
@@ -268,7 +320,7 @@ function renderHeader() {
   $('#feedNotice').textContent = message;
 }
 function renderAll() {
-  leadStory(); featuredStories(); renderNews(); renderMatches(); renderMatchNews(); renderGallery(); renderHeader();
+  leadStory(); featuredStories(); renderNews(); renderMatches(); renderMatchNews(); renderStandings(); renderGallery(); renderHeader(); renderDataHealth();
 }
 function updateCountdown() {
   const timeLeft = Math.max(0, state.nextRefreshAt - Date.now());
@@ -290,10 +342,11 @@ async function refresh() {
   if (state.loading) return;
   state.loading = true;
   $('#headerRefresh').classList.add('spinning');
-  const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos'), fetchJson('/api/matches')]);
+  const results = await Promise.allSettled([fetchJson('/api/news'), fetchJson('/api/photos'), fetchJson('/api/matches'), fetchJson('/api/standings')]);
   state.newsFailed = results[0].status === 'rejected';
   state.photosFailed = results[1].status === 'rejected';
   state.matchesFailed = results[2].status === 'rejected';
+  state.standingsFailed = results[3].status === 'rejected';
   if (results[0].status === 'fulfilled' && Array.isArray(results[0].value.articles)) {
     state.articles = results[0].value.articles;
     state.updatedAt = results[0].value.updatedAt;
@@ -302,8 +355,12 @@ async function refresh() {
   }
   if (results[1].status === 'fulfilled' && Array.isArray(results[1].value.photos)) {
     state.photos = results[1].value.photos;
+    state.photosUpdatedAt = results[1].value.updatedAt || null;
   }
   if (results[2].status === 'fulfilled') state.matches = results[2].value;
+  if (results[3].status === 'fulfilled') state.standings = results[3].value;
+  state.nextMatchRefreshAt = Date.now() + matchRefreshDelay();
+  state.nextStandingsRefreshAt = Date.now() + STANDINGS_REFRESH_MS;
   state.loadedOnce = true;
   state.nextRefreshAt = Date.now() + REFRESH_MS;
   state.loading = false;
@@ -311,6 +368,38 @@ async function refresh() {
   renderAll(); updateCountdown();
 }
 
+async function refreshMatchesOnly() {
+  if (state.loading || state.matchLoading) return;
+  state.matchLoading = true;
+  try {
+    const data = await fetchJson('/api/matches');
+    state.matches = data;
+    state.matchesFailed = false;
+  } catch { state.matchesFailed = true; }
+  finally {
+    state.matchLoading = false;
+    state.nextMatchRefreshAt = Date.now() + matchRefreshDelay();
+    renderMatches(); renderDataHealth();
+  }
+}
+async function refreshStandingsOnly() {
+  if (state.loading || state.standingsLoading) return;
+  state.standingsLoading = true;
+  try { state.standings = await fetchJson('/api/standings'); state.standingsFailed = false; }
+  catch { state.standingsFailed = true; }
+  finally {
+    state.standingsLoading = false;
+    state.nextStandingsRefreshAt = Date.now() + STANDINGS_REFRESH_MS;
+    renderStandings(); renderDataHealth();
+  }
+}
+function refreshIfNeeded() {
+  if (document.hidden) return;
+  const now = Date.now();
+  if (now >= state.nextRefreshAt) { refresh(); return; }
+  if (now >= state.nextMatchRefreshAt) refreshMatchesOnly();
+  if (now >= state.nextStandingsRefreshAt) refreshStandingsOnly();
+}
 function init() {
   $('#todayLabel').textContent = todayText();
   $('#categoryTabs').addEventListener('click', (event) => {
@@ -379,9 +468,10 @@ function init() {
     $('#mobileMenu').setAttribute('aria-expanded', 'false');
   }));
   setInterval(updateCountdown, 1000);
-  setInterval(() => { if (Date.now() >= state.nextRefreshAt) refresh(); }, 30_000);
+  setInterval(refreshIfNeeded, 10_000);
+  setInterval(renderDataHealth, 60_000);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && Date.now() >= state.nextRefreshAt) refresh();
+    if (!document.hidden) refreshIfNeeded();
   });
   updateCountdown();
   refresh();

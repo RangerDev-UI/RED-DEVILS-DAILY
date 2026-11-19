@@ -107,3 +107,14 @@ npm run serve
 - ถ้าไม่มีรหัสทีม/ภาพโหลดผิดพลาด จะแสดงตัวย่อชื่อทีมแทน โดยไม่สร้างโลโก้ปลอม
 - รูปตราสโมสรเป็นเครื่องหมายการค้าของสโมสรนั้น ๆ ใช้เพื่อระบุทีมในเว็บไซต์แฟนบอลอิสระ ไม่ได้เป็นการได้รับการรับรองจากสโมสร
 - ไฟล์ภาพโหลดจาก ESPN CDN โดยตรง จึงต้องทดสอบว่าผู้ให้บริการอนุญาตสำหรับรูปแบบการใช้งานจริงก่อนเผยแพร่ โดยเฉพาะเพื่อการค้า
+
+
+## Live scores, Premier League table, and source health (19 Nov 2026)
+
+- `/api/standings` gets current **Premier League** standings from ESPN. It validates the season and keeps missing stats as “—”, never zero. Cached for 30 minutes on the server. The table highlights Manchester United.
+- When a game is explicitly live, the **open browser** refreshes `/api/matches` every **45 seconds**. Around kickoff it polls every **90 seconds**; otherwise every 10 minutes. Actual freshness depends on upstream ESPN and CDN caching. This is **not instant/official real-time**.
+- The homepage shows distinct freshness badges for news, photos, fixtures and standings, including each server check time in Asia/Bangkok. When sources are missing/old/partial, users see a warning instead of invented figures.
+- `/api/health` performs an on-demand independent check of four services, returning `status`, `checkedAt`, `services`, `latestPublishedAt`. It may return HTTP 503 if any service is unavailable or stale.
+- Netlify Scheduled Function `monitor.mjs` runs **every 30 minutes** on **published production deploys**, including with no visitors. It checks the four sources and writes summaries/warnings to **Netlify function logs only**. It does not maintain a history, send push notifications, email users or guarantee upstream updates. Inspect logs in Netlify Functions > monitor.
+- ESPN is an unofficial, undocumented third-party feed; source changes/blocks may cause missing data. This release is locally tested with deterministic fixtures; live Netlify operation must be checked after deploy.
+- After production deploy, check `/api/news`, `/api/photos`, `/api/matches`, `/api/standings`, and `/api/health`; monitor in Netlify Functions.

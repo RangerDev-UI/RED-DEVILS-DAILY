@@ -32,6 +32,7 @@
       <nav class="primary-nav" id="mainNav" aria-label="เมนูหลัก">
         <a href="#home" class="nav-link is-active">หน้าแรก</a>
         <a href="#matches" class="nav-link">ตารางแข่ง</a>
+        <a href="#standings" class="nav-link">ตารางคะแนน</a>
         <a href="#latest" class="nav-link">ข่าวล่าสุด</a>
         <a href="#photos" class="nav-link">แกลเลอรีภาพ</a>
         <a href="#sources" class="nav-link">แหล่งข่าว</a>
@@ -84,7 +85,7 @@
     <section id="matches" class="container match-section" aria-label="ตารางแข่งและผลการแข่งขันแมนเชสเตอร์ ยูไนเต็ด">
       <div class="section-header">
         <div><div class="section-kicker">MATCHDAY CONTROL <span>/</span> 001</div><h2>UNITED <em class="match-red">MATCHDAY</em><span class="red-period">.</span> <small>FIXTURES &amp; RESULTS</small></h2></div>
-        <div class="match-source"><span class="stat-dot"></span> ข้อมูลการแข่งขันจาก ESPN <span id="matchSynced">กำลังโหลด...</span></div>
+        <div class="match-source"><span class="stat-dot"></span> ข้อมูลการแข่งขันจาก ESPN <span id="matchSynced">กำลังโหลด...</span><span id="liveCadence" class="live-cadence">ตรวจทุก 10 นาที</span></div>
       </div>
       <div class="match-overview">
         <article class="next-match" id="nextMatch" aria-live="polite"><span class="match-loading">กำลังตรวจสอบโปรแกรมนัดถัดไป...</span></article>
@@ -99,9 +100,17 @@
       </div>
     </section>
 
+    <section id="standings" class="container standings-section" aria-label="ตารางคะแนนพรีเมียร์ลีก">
+      <div class="section-header"><div><div class="section-kicker">PREMIER LEAGUE <span>/</span> 002</div><h2>LEAGUE <em>TABLE</em><span class="red-period">.</span> <small>ตารางคะแนนพรีเมียร์ลีก</small></h2></div><div class="table-source"><span id="standingsSeason">ฤดูกาลปัจจุบัน</span><span id="standingsSynced">กำลังโหลด...</span></div></div>
+      <div class="table-scroll" tabindex="0" aria-label="เลื่อนดูตารางคะแนนได้"><table class="league-table"><thead><tr><th scope="col">อันดับ</th><th scope="col" class="table-team-name">สโมสร</th><th scope="col">แข่ง</th><th scope="col">ชนะ</th><th scope="col">เสมอ</th><th scope="col">แพ้</th><th scope="col">ได้</th><th scope="col">เสีย</th><th scope="col">ผลต่าง</th><th scope="col">แต้ม</th></tr></thead><tbody id="standingsBody"><tr><td colspan="10" class="standings-loading">กำลังโหลดตารางคะแนนจริงจาก ESPN...</td></tr></tbody></table></div>
+      <div class="standings-footer"><p id="standingsHealth" role="status">ตารางคะแนนอัปเดตตามแหล่งข้อมูลจริง ไม่ใช่ข้อมูลจำลอง</p><a href="https://www.espn.com/soccer/standings/_/league/eng.1" target="_blank" rel="noopener noreferrer">เปิดตารางคะแนน ESPN ↗</a></div>
+    </section>
+
+    <section class="container data-health-section" aria-label="สถานะความสดของข้อมูล"><div class="health-header"><div><div class="section-kicker">DATA MONITOR <span>/</span> AUTO CHECK</div><h2>สถานะข้อมูล<span class="red-period">.</span></h2><p>แสดงเวลาเช็กข้อมูลจริงและเตือนข้อมูลเก่า ไม่รับประกันว่าต้นทางมีข่าวหรือรูปใหม่ทุกครั้ง</p></div><div id="healthOverall" class="health-overall" role="status">กำลังตรวจ...</div></div><div class="health-grid" id="healthGrid" aria-live="polite"></div><p class="health-note">ระบบตรวจแหล่งข้อมูลทุก 30 นาทีเมื่อ Netlify Scheduled Function ทำงานบน Production (บันทึกผลใน Logs ไม่ส่งแจ้งเตือน) และเว็บตรวจซ้ำเมื่อมีคนเปิดหน้า</p></section>
+
     <section id="latest" class="container news-section">
       <div class="section-header">
-        <div><div class="section-kicker">WHAT'S HAPPENING <span>/</span> 002</div><h2>ข่าวล่าสุด<span class="red-period">.</span> <small>LATEST NEWS</small></h2></div>
+        <div><div class="section-kicker">WHAT'S HAPPENING <span>/</span> 003</div><h2>ข่าวล่าสุด<span class="red-period">.</span> <small>LATEST NEWS</small></h2></div>
         <div class="section-counter"><span class="pulse"></span><span id="newsUpdatedBadge">กำลังอัปเดตข้อมูล</span></div>
       </div>
       <div class="filter-toolbar">
@@ -126,7 +135,7 @@
 
     <section class="gallery-section" id="photos">
       <div class="container">
-        <div class="section-header gallery-heading"><div><div class="section-kicker">THROUGH THE LENS <span>/</span> 003</div><h2>RED <em>FRAMES</em><span class="red-period">.</span> <small>PHOTO GALLERY</small></h2><p>ภาพประกอบเกี่ยวกับแมนเชสเตอร์ ยูไนเต็ด จากคลังภาพเสรีพร้อมเครดิตเจ้าของผลงาน</p></div><div class="gallery-arrow" aria-hidden="true">↗</div></div>
+        <div class="section-header gallery-heading"><div><div class="section-kicker">THROUGH THE LENS <span>/</span> 004</div><h2>RED <em>FRAMES</em><span class="red-period">.</span> <small>PHOTO GALLERY</small></h2><p>ภาพประกอบเกี่ยวกับแมนเชสเตอร์ ยูไนเต็ด จากคลังภาพเสรีพร้อมเครดิตเจ้าของผลงาน</p></div><div class="gallery-arrow" aria-hidden="true">↗</div></div>
         <div class="photo-filter-bar" id="photoFilterTabs" role="group" aria-label="กรองประเภทภาพ"><button type="button" class="photo-filter-button active" data-photo-filter="all" aria-pressed="true">ภาพแมนยูทั้งหมด</button><button type="button" class="photo-filter-button" data-photo-filter="players" aria-pressed="false">ภาพนักเตะ <span id="playerPhotoCount"></span></button></div>
         <p class="photo-caveat">ภาพนักเตะอาจเป็นภาพในอดีตหรือผู้เล่นเก่า ไม่ใช่รายชื่อทีมชุดปัจจุบัน และไม่จำเป็นต้องเกี่ยวกับข่าวข้างบน</p>
         <div class="photo-wall" id="photoWall" aria-live="polite"><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div></div>
@@ -136,7 +145,7 @@
     </section>
 
     <section id="sources" class="container sources-section">
-      <div><div class="section-kicker">THE INFORMATION <span>/</span> 004</div><h2>ข่าวจากแหล่งจริง<span class="red-period">.</span></h2><p>เว็บนี้เป็นเว็บไซต์แฟนบอลอิสระ ไม่ใช่เว็บไซต์ทางการของสโมสร ข่าวทุกชิ้นเชื่อมไปยังต้นฉบับ และภาพประกอบบางภาพอาจไม่ใช่ภาพจากเหตุการณ์ในข่าว</p></div>
+      <div><div class="section-kicker">THE INFORMATION <span>/</span> 005</div><h2>ข่าวจากแหล่งจริง<span class="red-period">.</span></h2><p>เว็บนี้เป็นเว็บไซต์แฟนบอลอิสระ ไม่ใช่เว็บไซต์ทางการของสโมสร ข่าวทุกชิ้นเชื่อมไปยังต้นฉบับ และภาพประกอบบางภาพอาจไม่ใช่ภาพจากเหตุการณ์ในข่าว</p></div>
       <div class="source-links">
         <a href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer"><span>01</span> MANUTD.COM <b>↗</b></a>
         <a href="https://www.theguardian.com/football/manchester-united" target="_blank" rel="noopener noreferrer"><span>02</span> THE GUARDIAN <b>↗</b></a>

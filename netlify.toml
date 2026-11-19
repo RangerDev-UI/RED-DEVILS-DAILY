@@ -31,3 +31,13 @@
   from = "/api/matches"
   to = "/.netlify/functions/matches"
   status = 200
+
+[[redirects]]
+  from = "/api/standings"
+  to = "/.netlify/functions/standings"
+  status = 200
+
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200

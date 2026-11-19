@@ -74,3 +74,35 @@
   .fixture-main .match-club{max-width:45%;gap:4px}.fixture-main .team-badge{width:21px;height:21px}
   .fixture-main .match-club strong{font-size:13px}.result-team-pair .match-club strong{font-size:11px}
 }
+
+
+/* League table and four-source health monitor */
+.standings-section{padding:70px 0 86px}.standings-section .section-header h2 em{font-style:normal;color:var(--red)}
+.table-source{display:flex;flex-direction:column;align-items:flex-end;gap:7px;color:#a9adb3;font-size:11px}
+.table-source span:first-child{color:white;font-weight:700;font-size:13px}
+.table-scroll{overflow-x:auto;border:1px solid #3a3b3f;background:#14161a;margin-top:28px}
+.league-table{width:100%;border-collapse:collapse;text-align:center;min-width:710px}
+.league-table th,.league-table td{padding:13px 9px;border-bottom:1px solid #303237;font-size:12px;font-weight:500}
+.league-table thead th{font:700 11px var(--font);color:#b2b4ba;background:#202126;position:sticky;top:0}
+.league-table .table-team-name{text-align:left;min-width:190px}
+.league-table .league-points{font-weight:800;color:#fff;font-size:15px}
+.league-table tr.is-united{background:#641b276b}
+.league-table tr.is-united>th{color:#fff}
+.league-table .standings-group td{text-align:left;color:#ff7b85;font-weight:700;background:#232024}
+.league-club{display:flex;gap:9px;align-items:center}.league-club b{font:800 10px var(--display);color:#ff7a89}
+.league-club .team-badge{width:27px;height:27px}
+.standings-footer{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;color:#a8aab0;font-size:11px;margin-top:13px}
+.standings-footer a{color:#fd717d}.standings-footer p{margin:0}.standings-footer .has-warning{color:#f4bc8c}
+.standings-loading{padding:29px!important;text-align:center}
+.data-health-section{padding:28px 0 70px}.health-header{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.health-header h2{font:800 37px var(--display);margin:5px 0}.health-header p{font-size:12px;color:#a8aab0}
+.health-overall{font-size:12px;color:#80e2b1}.health-overall.has-warning{color:#f4b87b}
+.health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.health-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:#181a1f;border:1px solid #36393d;padding:17px;position:relative}
+.health-card strong{font-size:15px}.health-card span:not(.health-dot){font-size:11px;color:#b9bdc2}.health-card small{font-size:10px;color:#8c929c}
+.health-dot{width:8px;height:8px;border-radius:50%;background:#79d5a2;position:absolute;top:19px;right:17px}
+.health-card.bad .health-dot{background:#f27070}.health-card.warn .health-dot{background:#f0ba6c}
+.health-note{font-size:10px;color:#90949a;line-height:1.7;margin:14px 0 0}
+.live-cadence{font-size:10px;color:#f5bbc3;border:1px solid #924854;padding:5px 8px}
+@media(max-width:900px){.health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.standings-section{padding:45px 0}.table-source{align-items:flex-start}.standings-section .section-header{flex-direction:column;align-items:flex-start}.health-header{flex-direction:column;align-items:flex-start}.health-grid{gap:8px}.health-card{padding:12px}.live-cadence{display:block;margin:5px 0}}
