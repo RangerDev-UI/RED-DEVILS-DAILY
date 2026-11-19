@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0b0d" />
+  <meta name="description" content="RED DEVILS DAILY — เว็บไซต์แฟนแมนเชสเตอร์ ยูไนเต็ด รวมข่าวล่าสุดและภาพประกอบที่อัปเดตอัตโนมัติ พร้อมลิงก์ไปยังแหล่งข่าวต้นฉบับ" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="RED DEVILS DAILY — ข่าวแมนยู" />
+  <meta property="og:description" content="ข่าวแมนเชสเตอร์ ยูไนเต็ด พร้อมแกลเลอรีภาพที่อัปเดตอัตโนมัติ" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/site.css" />
+  <title>RED DEVILS DAILY — ข่าวแมนยู</title>
+  <script type="module" src="/assets/site.js"></script>
+</head>
+<body>
+  <div class="top-ribbon">
+    <div class="container ribbon-inner">
+      <div class="ribbon-left"><span class="pulse"></span><strong>UNITED NEWS HUB</strong><span class="ribbon-break">/</span><span>ข่าวและภาพอัปเดตอัตโนมัติ</span></div>
+      <div class="ribbon-right"><span id="todayLabel"></span><span class="ribbon-divider"></span><span>INDEPENDENT FAN WEBSITE</span></div>
+    </div>
+  </div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#home" aria-label="RED DEVILS DAILY หน้าแรก">
+        <span class="brand-symbol" aria-hidden="true"><span>R</span><span class="brand-slash">/</span><span>D</span></span>
+        <span class="brand-wordmark"><strong>RED DEVILS</strong><small>DAILY <b>●</b> MANCHESTER UNITED</small></span>
+      </a>
+      <nav class="primary-nav" id="mainNav" aria-label="เมนูหลัก">
+        <a href="#home" class="nav-link is-active">หน้าแรก</a>
+        <a href="#latest" class="nav-link">ข่าวล่าสุด</a>
+        <a href="#photos" class="nav-link">แกลเลอรีภาพ</a>
+        <a href="#sources" class="nav-link">แหล่งข่าว</a>
+      </nav>
+      <div class="header-actions">
+        <div class="live-mark"><span class="pulse"></span>LIVE UPDATES</div>
+        <button class="icon-button refresh-button" id="headerRefresh" type="button" aria-label="อัปเดตข่าวและรูปภาพใหม่" title="อัปเดตใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.7 9a7 7 0 0 1 12-2L20 12M4 12l2.3 3a7 7 0 0 0 12-2"/></svg></button>
+        <button class="icon-button menu-button" id="mobileMenu" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="เปิดเมนู"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="intro container" aria-label="แนะนำเว็บไซต์">
+      <div><p class="eyebrow"><span class="rule"></span> THE RED SIDE OF FOOTBALL</p>
+        <h1>ALL THINGS <em>UNITED<span>.</span></em></h1>
+        <p class="intro-sub">ข่าวแมนยู ทุกความเคลื่อนไหว พร้อมภาพที่คุณอยากเห็น — ในที่เดียว</p>
+      </div>
+      <div class="intro-aside"><div class="intro-number">1878<span>EST.</span></div><p>THE LEGACY. THE PASSION.<br />THE RED DEVILS.</p></div>
+    </section>
+    <div class="container"><div class="thin-rule"><span></span><p>TOP STORIES <b>///</b> THE LATEST FROM OLD TRAFFORD</p></div></div>
+
+    <section class="container lead-layout" aria-label="ข่าวเด่น">
+      <div id="leadStory" class="lead-story" aria-live="polite">
+        <div class="lead-image placeholder-image" role="img" aria-label="ภาพประกอบสนามโอลด์แทรฟฟอร์ด"></div>
+        <div class="lead-content"><span class="story-label">UNITED UPDATES</span><h2>ข่าวแมนยู<br />และภาพล่าสุด</h2><p>กำลังตรวจสอบข่าวจากแหล่งข้อมูลที่เชื่อถือได้...</p></div>
+      </div>
+      <div class="lead-aside">
+        <div class="aside-heading"><span>FEATURED STORIES</span><span class="aside-index">01 — 02</span></div>
+        <div id="featuredStories" class="featured-stack">
+          <div class="featured-placeholder loading-glow"></div><div class="featured-placeholder loading-glow"></div>
+        </div>
+        <div class="update-panel">
+          <div class="update-panel-top"><span class="status-icon"><span class="pulse"></span></span><span>ระบบอัปเดตอัตโนมัติ</span><span class="panel-live">AUTO SYNC</span></div>
+          <div class="update-panel-main"><div><small>ตรวจสอบครั้งล่าสุด</small><strong id="lastUpdated">กำลังโหลด...</strong></div><div><small>ตรวจสอบครั้งถัดไป</small><strong id="nextUpdate">10:00</strong></div></div>
+          <div class="update-panel-bar"><span id="refreshProgress"></span></div>
+          <p>เว็บจะตรวจข่าวและรูปใหม่ทุก 10 นาทีเมื่อหน้านี้เปิดอยู่</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="container stats-strip" aria-label="สถานะเว็บไซต์">
+      <span><span class="stat-dot"></span> AUTO REFRESH ACTIVE</span>
+      <span>NEWS SOURCES <strong id="sourceCount">04</strong></span>
+      <span>NEWS AVAILABLE <strong id="articleCount">—</strong></span>
+      <span>PHOTO LIBRARY <strong id="photoCount">—</strong></span>
+      <span class="stats-end">GLORY GLORY MAN UNITED <b>↗</b></span>
+    </div>
+
+    <section id="latest" class="container news-section">
+      <div class="section-header">
+        <div><div class="section-kicker">WHAT'S HAPPENING <span>/</span> 001</div><h2>ข่าวล่าสุด<span class="red-period">.</span> <small>LATEST NEWS</small></h2></div>
+        <div class="section-counter"><span class="pulse"></span><span id="newsUpdatedBadge">กำลังอัปเดตข้อมูล</span></div>
+      </div>
+      <div class="filter-toolbar">
+        <div class="filter-tabs" id="categoryTabs" role="group" aria-label="เลือกหมวดข่าว">
+          <button type="button" class="filter-tab active" data-category="all" aria-pressed="true">ทั้งหมด</button>
+          <button type="button" class="filter-tab" data-category="club" aria-pressed="false">ข่าวสโมสร</button>
+          <button type="button" class="filter-tab" data-category="transfers" aria-pressed="false">ตลาดนักเตะ</button>
+          <button type="button" class="filter-tab" data-category="matches" aria-pressed="false">การแข่งขัน</button>
+          <button type="button" class="filter-tab" data-category="players" aria-pressed="false">นักเตะ</button>
+        </div>
+        <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="searchInput" type="search" placeholder="ค้นหาข่าวแมนยู..." autocomplete="off" aria-label="ค้นหาข่าว" /></label>
+      </div>
+      <div class="news-grid" id="newsGrid" aria-live="polite">
+        <div class="skeleton-card"><div class="skeleton-photo loading-glow"></div><div class="skeleton-line loading-glow"></div><div class="skeleton-line short loading-glow"></div></div>
+        <div class="skeleton-card"><div class="skeleton-photo loading-glow"></div><div class="skeleton-line loading-glow"></div><div class="skeleton-line short loading-glow"></div></div>
+        <div class="skeleton-card"><div class="skeleton-photo loading-glow"></div><div class="skeleton-line loading-glow"></div><div class="skeleton-line short loading-glow"></div></div>
+      </div>
+      <div class="show-more-wrap"><button id="showMore" class="outline-button" type="button" hidden>ดูข่าวเพิ่มเติม <span>↗</span></button></div>
+    </section>
+
+    <section class="gallery-section" id="photos">
+      <div class="container">
+        <div class="section-header gallery-heading"><div><div class="section-kicker">THROUGH THE LENS <span>/</span> 002</div><h2>RED <em>FRAMES</em><span class="red-period">.</span> <small>PHOTO GALLERY</small></h2><p>ภาพประกอบเกี่ยวกับแมนเชสเตอร์ ยูไนเต็ด จากคลังภาพเสรีพร้อมเครดิตเจ้าของผลงาน</p></div><div class="gallery-arrow" aria-hidden="true">↗</div></div>
+        <div class="photo-wall" id="photoWall" aria-live="polite"><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div><div class="photo-wait loading-glow"></div></div>
+        <div class="gallery-bottom"><div><span class="outline-dot"></span> PHOTO CREDIT: WIKIMEDIA COMMONS / RESPECT CREATOR LICENSES</div><a href="https://commons.wikimedia.org/wiki/Category:Manchester_United_F.C." target="_blank" rel="noopener noreferrer">ดูคลังภาพต้นฉบับ <span>↗</span></a></div>
+      </div>
+    </section>
+
+    <section id="sources" class="container sources-section">
+      <div><div class="section-kicker">THE INFORMATION <span>/</span> 003</div><h2>ข่าวจากแหล่งจริง<span class="red-period">.</span></h2><p>เว็บนี้เป็นเว็บไซต์แฟนบอลอิสระ ไม่ใช่เว็บไซต์ทางการของสโมสร ข่าวทุกชิ้นเชื่อมไปยังต้นฉบับ และภาพประกอบบางภาพอาจไม่ใช่ภาพจากเหตุการณ์ในข่าว</p></div>
+      <div class="source-links">
+        <a href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer"><span>01</span> MANUTD.COM <b>↗</b></a>
+        <a href="https://www.theguardian.com/football/manchester-united" target="_blank" rel="noopener noreferrer"><span>02</span> THE GUARDIAN <b>↗</b></a>
+        <a href="https://news.google.com/search?q=Manchester%20United" target="_blank" rel="noopener noreferrer"><span>03</span> GOOGLE NEWS <b>↗</b></a>
+        <a href="https://news.google.com/search?q=%E0%B9%81%E0%B8%A1%E0%B8%99%E0%B8%A2%E0%B8%B9&hl=th&gl=TH&ceid=TH%3Ath" target="_blank" rel="noopener noreferrer"><span>04</span> GOOGLE NEWS THAI <b>↗</b></a>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand">RED DEVILS <span>DAILY</span><small>MADE FOR THE LOVE OF UNITED.</small></div><div class="footer-right"><p>Independent fan-made news aggregator. Not affiliated with Manchester United Football Club.</p><p>News belongs to original publishers. Images remain under their respective licenses.</p></div><a href="#home" class="back-top" aria-label="กลับไปด้านบน">↑</a></div></footer>
+
+  <div class="lightbox" id="photoLightbox" hidden role="dialog" aria-modal="true" aria-labelledby="lightboxTitle"><div class="lightbox-backdrop" data-close="true"></div><div class="lightbox-content"><button class="lightbox-close" id="closeLightbox" aria-label="ปิดภาพ">×</button><img id="lightboxImg" alt="" /><div class="lightbox-meta"><h3 id="lightboxTitle"></h3><p id="lightboxCredit"></p><div class="lightbox-links"><a id="lightboxSource" href="#" target="_blank" rel="noopener noreferrer">ดูที่มาและเครดิตภาพ ↗</a><a id="lightboxLicense" href="#" target="_blank" rel="noopener noreferrer">สัญญาอนุญาต ↗</a></div></div></div></div>
+</body>
+</html>

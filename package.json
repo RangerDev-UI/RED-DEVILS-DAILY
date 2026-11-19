@@ -1,0 +1,14 @@
+{
+  "name": "red-devils-daily",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Manchester United fan news and automatically refreshed photo gallery, powered by RSS and Wikimedia Commons.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "serve": "npx netlify dev"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
