@@ -177,6 +177,39 @@ function closePhoto() {
   document.body.style.overflow = '';
   state.activePhoto = null;
 }
+const MANCHESTER_UNITED_CREST = 'https://a.espncdn.com/i/teamlogos/soccer/500/360.png';
+function safeTeamCrest(input) {
+  try {
+    const url = new URL(input);
+    return url.protocol === 'https:' && url.hostname === 'a.espncdn.com' &&
+      /^\/i\/teamlogos\/soccer\/(?:500|100)\/\d{1,9}\.png$/.test(url.pathname) ? url.href : '';
+  } catch { return ''; }
+}
+function teamInitials(name) {
+  const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+  return words.length > 1 ? words.slice(0, 2).map(word => word[0]).join('').toUpperCase() : (words[0] || 'FC').slice(0, 3).toUpperCase();
+}
+function teamBadge(url, initials) {
+  const src = safeTeamCrest(url);
+  return `<span class="team-badge" aria-hidden="true"><span class="team-badge-fallback">${escapeHtml(initials)}</span>${src ? `<img class="team-logo-image" src="${escapeHtml(src)}" alt="" loading="lazy" decoding="async">` : ''}</span>`;
+}
+function matchClub(match, united) {
+  const name = united ? 'MAN UTD' : (match.opponent || 'คู่แข่ง');
+  const logo = united ? (match.logoUnited || MANCHESTER_UNITED_CREST) : match.logoOpponent;
+  return `<span class="match-club">${teamBadge(logo, united ? 'MU' : teamInitials(name))}<strong>${escapeHtml(name)}</strong></span>`;
+}
+function matchResultPair(match) {
+  const home = match.home ? matchClub(match, true) : matchClub(match, false);
+  const away = match.home ? matchClub(match, false) : matchClub(match, true);
+  return `<span class="result-team-pair">${home}<span class="result-dash">—</span>${away}</span>`;
+}
+// Show initials rather than a broken-image icon if ESPN has no crest for a team.
+document.addEventListener('error', event => {
+  if (event.target instanceof HTMLImageElement && event.target.classList.contains('team-logo-image')) {
+    event.target.hidden = true;
+  }
+}, true);
+
 function matchDate(raw, options = {}) {
   if (!raw || !Number.isFinite(new Date(raw).getTime())) return 'ยังไม่ระบุเวลา';
   return new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', ...options }).format(new Date(raw));
@@ -186,8 +219,7 @@ function matchScore(match) {
   return match.home ? `${escapeHtml(match.scoreUnited)} : ${escapeHtml(match.scoreOpponent)}` : `${escapeHtml(match.scoreOpponent)} : ${escapeHtml(match.scoreUnited)}`;
 }
 function matchPair(match) {
-  const opponent = escapeHtml(match.opponent || 'คู่แข่ง');
-  return match.home ? `<strong>MAN UTD</strong><span class="versus">VS</span><strong>${opponent}</strong>` : `<strong>${opponent}</strong><span class="versus">VS</span><strong>MAN UTD</strong>`;
+  return match.home ? `${matchClub(match, true)}<span class="versus">VS</span>${matchClub(match, false)}` : `${matchClub(match, false)}<span class="versus">VS</span>${matchClub(match, true)}`;
 }
 function matchEmpty(text) { return `<p class="match-placeholder">${escapeHtml(text)}</p>`; }
 function renderMatches() {
@@ -198,8 +230,8 @@ function renderMatches() {
   const next = live[0] || fixtures[0];
   const info = data?.sourceUrl && safeUrl(data.sourceUrl) !== '#' ? safeUrl(data.sourceUrl) : 'https://www.espn.com/soccer/team/fixtures/_/id/360';
   $('#matchSynced').textContent = data?.updatedAt ? `· ${matchDate(data.updatedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} น.` : '· ยังไม่อัปเดต';
-  $('#nextMatch').innerHTML = next ? `<div class="next-match-top"><span class="match-kicker">${next.status === 'live' ? 'กำลังแข่งขัน · ข้อมูลอาจล่าช้า' : 'NEXT MATCH / นัดต่อไป'}</span><span class="match-league">${escapeHtml(next.competition)}</span></div><div class="next-match-crest">MU <span>↗</span></div><div class="next-match-versus">${matchPair(next)}</div><div class="next-match-time">${matchDate(next.date, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} น. · เวลาไทย</div>${next.status === 'live' ? `<div class="next-match-score">${matchScore(next)} <small>LIVE</small></div>` : ''}<div class="next-match-bottom"><span>${escapeHtml(next.venue || 'รอข้อมูลสนาม')}</span><a href="${escapeHtml(safeUrl(next.url))}" target="_blank" rel="noopener noreferrer">รายละเอียดการแข่งขัน ↗</a></div>` : `<div class="match-missing"><span class="match-kicker">NEXT MATCH</span><h3>รอข้อมูลโปรแกรมการแข่งขัน</h3><p>ยังไม่พบโปรแกรมแข่งแมนยูจากแหล่งข้อมูลที่เชื่อมต่อ ไม่แสดงตารางสมมุติ</p><a href="${escapeHtml(info)}" target="_blank" rel="noopener noreferrer">ดูโปรแกรมบน ESPN ↗</a></div>`;
-  $('#matchResults').innerHTML = results.length ? results.map(m => `<a class="result-line" href="${escapeHtml(safeUrl(m.url))}" target="_blank" rel="noopener noreferrer"><span><small>${escapeHtml(m.competition)} · ${matchDate(m.date, { day: 'numeric', month: 'short' })}</small><strong>${escapeHtml(m.home ? 'แมนยู' : m.opponent)} <em>—</em> ${escapeHtml(m.home ? m.opponent : 'แมนยู')}</strong></span><b>${matchScore(m)}</b></a>`).join('') : matchEmpty('ยังไม่พบผลการแข่งขันที่ยืนยันแล้ว');
+  $('#nextMatch').innerHTML = next ? `<div class="next-match-top"><span class="match-kicker">${next.status === 'live' ? 'กำลังแข่งขัน · ข้อมูลอาจล่าช้า' : 'NEXT MATCH / นัดต่อไป'}</span><span class="match-league">${escapeHtml(next.competition)}</span></div><div class="next-match-crest-tag">RED DEVILS / FIXTURE <span>↗</span></div><div class="next-match-versus">${matchPair(next)}</div><div class="next-match-time">${matchDate(next.date, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} น. · เวลาไทย</div>${next.status === 'live' ? `<div class="next-match-score">${matchScore(next)} <small>LIVE</small></div>` : ''}<div class="next-match-bottom"><span>${escapeHtml(next.venue || 'รอข้อมูลสนาม')}</span><a href="${escapeHtml(safeUrl(next.url))}" target="_blank" rel="noopener noreferrer">รายละเอียดการแข่งขัน ↗</a></div>` : `<div class="match-missing"><span class="match-kicker">NEXT MATCH</span><h3>รอข้อมูลโปรแกรมการแข่งขัน</h3><p>ยังไม่พบโปรแกรมแข่งแมนยูจากแหล่งข้อมูลที่เชื่อมต่อ ไม่แสดงตารางสมมุติ</p><a href="${escapeHtml(info)}" target="_blank" rel="noopener noreferrer">ดูโปรแกรมบน ESPN ↗</a></div>`;
+  $('#matchResults').innerHTML = results.length ? results.map(m => `<a class="result-line" href="${escapeHtml(safeUrl(m.url))}" target="_blank" rel="noopener noreferrer"><span><small>${escapeHtml(m.competition)} · ${matchDate(m.date, { day: 'numeric', month: 'short' })}</small><strong class="result-teams">${matchResultPair(m)}</strong></span><b>${matchScore(m)}</b></a>`).join('') : matchEmpty('ยังไม่พบผลการแข่งขันที่ยืนยันแล้ว');
   $('#fixtureList').innerHTML = fixtures.length ? fixtures.map(m => `<a class="fixture-item" href="${escapeHtml(safeUrl(m.url))}" target="_blank" rel="noopener noreferrer"><span class="fixture-date"><strong>${matchDate(m.date, {day: '2-digit'})}</strong><small>${matchDate(m.date, {month: 'short'})}</small></span><span class="fixture-main"><small>${escapeHtml(m.competition)} · ${m.home ? 'เหย้า' : 'เยือน'}</small><span>${matchPair(m)}</span></span><span class="fixture-time">${matchDate(m.date, { hour: '2-digit', minute: '2-digit' })} น.</span><span class="fixture-arrow">↗</span></a>`).join('') : matchEmpty('ยังไม่มีโปรแกรมในข้อมูลที่ได้รับ ลองดูจากแหล่งข่าวต้นฉบับ');
   const warning = state.matchesFailed || data?.partial || data?.stale || !data?.hasData;
   $('#matchFeedHealth').classList.toggle('has-warning', Boolean(warning));

@@ -40,3 +40,37 @@
 @media(max-width:700px){.match-section{padding:60px 0}.match-section .section-header h2{font-size:39px}.match-source{flex-wrap:wrap}.match-overview{margin-top:20px}.next-match{min-height:340px;padding:22px}.next-match-versus{font-size:25px}.next-match-time{font-size:11px}.next-match-crest{margin-top:26px}.next-match-bottom{flex-wrap:wrap}.fixture-list{grid-template-columns:1fr}.fixture-item{min-height:92px;padding:14px 13px}.fixture-main>span{font-size:19px}.fixture-heading{align-items:flex-start}.fixture-heading h3{font-size:15px}.fixture-heading h3 span{display:block;margin:7px 0 0}.fixture-heading a{font-size:10px;max-width:110px;text-align:right}.match-news-panels{grid-template-columns:1fr}.match-news-panel{padding:17px}.match-panel-heading{font-size:14px}.match-panel-heading span{font-size:10px}.photo-caveat{font-size:10px}}
 @media(min-width:701px) and (max-width:1040px){.header-actions .menu-button{display:grid}.primary-nav{display:none;position:absolute;top:84px;left:0;right:0;height:auto;background:#121316;border-bottom:1px solid #393a3d;box-shadow:0 12px 30px rgba(0,0,0,.4);padding:9px 28px 16px;flex-direction:column;align-items:stretch;gap:0}.primary-nav.open{display:flex}.nav-link{height:46px;border-bottom:1px solid #26272b}.nav-link:after{display:none}}
 @media(max-width:700px){.fixture-item{display:grid;grid-template-columns:47px minmax(0,1fr) 59px;column-gap:11px}.fixture-date{min-width:0;padding-right:11px}.fixture-time{font-size:11px;text-align:right;align-self:start}.fixture-arrow{display:none}.fixture-main>span{gap:5px;flex-wrap:wrap;font-size:16px}.fixture-main strong{overflow-wrap:normal;word-break:normal}.fixture-main .versus{font-size:10px}}
+
+/* Club badges: Manchester United wordmark, main match and dynamic opponents. */
+.brand-symbol.brand-crest{border:0;background:transparent;transform:none;width:54px;height:54px;position:relative;flex:none;overflow:visible}
+.brand-crest-fallback{font:900 23px/1 var(--display);color:var(--red);border:2px solid var(--red);width:49px;height:49px;display:grid;place-items:center}
+.brand-crest .team-logo-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:none}
+.brand-crest .team-logo-image[hidden],.team-badge .team-logo-image[hidden]{display:none}
+.team-badge{position:relative;display:inline-grid;place-items:center;width:29px;height:29px;flex:none;vertical-align:middle}
+.team-badge-fallback{display:grid;place-items:center;width:100%;height:100%;border:1px solid #63666d;border-radius:50%;background:#24262b;color:#ecedef;font:800 10px/1 var(--display)}
+.team-badge .team-logo-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.match-club{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-width:0;flex:1;text-align:center}
+.match-club strong{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.next-match-crest-tag{color:#ffa3a7;font:800 12px/1 var(--display);letter-spacing:1.7px;margin:28px 0 12px;position:relative;z-index:1}
+.next-match-crest-tag span{margin-left:9px}
+.next-match-versus{align-items:center;max-width:100%;gap:10px}
+.next-match-versus .team-badge{width:69px;height:69px}
+.next-match-versus .team-badge-fallback{font-size:22px;border-color:#ad4b56;background:#501d27}
+.next-match-versus .match-club strong{font:800 clamp(19px,2.1vw,27px)/1.16 var(--display)}
+.fixture-main>span{flex-wrap:wrap}
+.fixture-main .match-club{flex-direction:row;flex:initial;max-width:45%;gap:6px;text-align:left}
+.fixture-main .match-club strong{font-size:clamp(12px,1.1vw,15px)}
+.fixture-main .team-badge{width:25px;height:25px}
+.result-line .result-teams{display:block;min-width:0}
+.result-team-pair{display:flex!important;align-items:center;flex-direction:row!important;gap:6px!important;flex-wrap:wrap}
+.result-team-pair .match-club{display:inline-flex;flex-direction:row;flex:initial;gap:4px;text-align:left}
+.result-team-pair .match-club strong{font:500 12px/1.35 var(--font)}
+.result-team-pair .team-badge{width:21px;height:21px}
+.result-team-pair .team-badge-fallback{font-size:7px}
+.result-dash{color:#74777f}
+@media(max-width:700px){
+  .brand-symbol.brand-crest{width:43px;height:43px}.brand-crest-fallback{width:42px;height:42px}
+  .next-match-versus .team-badge{width:58px;height:58px}.next-match-versus .match-club strong{font-size:19px}
+  .fixture-main .match-club{max-width:45%;gap:4px}.fixture-main .team-badge{width:21px;height:21px}
+  .fixture-main .match-club strong{font-size:13px}.result-team-pair .match-club strong{font-size:11px}
+}

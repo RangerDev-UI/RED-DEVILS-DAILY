@@ -72,3 +72,22 @@ test('matches Netlify function delivers cacheable, attributed JSON', async () =>
     assert.equal(data.sourceUrl, 'https://www.espn.com/soccer/team/fixtures/_/id/360');
   } finally { globalThis.fetch = previous; }
 });
+
+test('team logos are resolved only from trusted ESPN assets, with safe ID fallback', () => {
+  const comp = COMPETITIONS[0];
+  const event = makeEvent('401856201', '2026-11-25T20:00:00Z');
+  event.competitions[0].competitors[0].team.logos = [{ href: 'https://a.espncdn.com/i/teamlogos/soccer/100/360.png' }];
+  event.competitions[0].competitors[1].team.logo = 'https://malicious.example/logo.png';
+  const match = normalizeMatch(event, comp);
+  assert.equal(match.logoUnited, 'https://a.espncdn.com/i/teamlogos/soccer/100/360.png');
+  assert.equal(match.logoOpponent, 'https://a.espncdn.com/i/teamlogos/soccer/500/364.png');
+  event.competitions[0].competitors[1].team.id = '<bad>';
+  assert.equal(normalizeMatch(event, comp).logoOpponent, null);
+});
+
+test('logo data survives through the match API', async () => {
+  const event = makeEvent('401856202', new Date(Date.now() + 86400000).toISOString());
+  const data = await loadMatches(async () => new Response(JSON.stringify({ events: [event] }), { status: 200 }));
+  assert.equal(data.upcoming[0].logoUnited, 'https://a.espncdn.com/i/teamlogos/soccer/500/360.png');
+  assert.equal(data.upcoming[0].logoOpponent, 'https://a.espncdn.com/i/teamlogos/soccer/500/364.png');
+});
