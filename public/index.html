@@ -19,7 +19,7 @@
 <body>
   <div class="top-ribbon">
     <div class="container ribbon-inner">
-      <div class="ribbon-left"><span class="pulse"></span><strong>UNITED NEWS HUB</strong><span class="ribbon-break">/</span><span>ข่าวและภาพอัปเดตอัตโนมัติ</span></div>
+      <div class="ribbon-left"><span class="pulse"></span><strong>UNITED NEWS HUB</strong><span class="ribbon-break">/</span><span>INDEPENDENT UNITED FAN NEWS</span></div>
       <div class="ribbon-right"><span id="todayLabel"></span><span class="ribbon-divider"></span><span>INDEPENDENT FAN WEBSITE</span></div>
     </div>
   </div>
@@ -40,7 +40,7 @@
         <a href="#sources" class="nav-link">แหล่งข่าว</a>
       </nav>
       <div class="header-actions">
-        <div class="live-mark"><span class="pulse"></span>LIVE UPDATES</div>
+        
         <button class="icon-button refresh-button" id="headerRefresh" type="button" aria-label="อัปเดตข่าวและรูปภาพใหม่" title="อัปเดตใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.7 9a7 7 0 0 1 12-2L20 12M4 12l2.3 3a7 7 0 0 0 12-2"/></svg></button>
         <button class="icon-button menu-button" id="mobileMenu" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="เปิดเมนู"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div>
@@ -51,7 +51,7 @@
     <section class="intro container" aria-label="แนะนำเว็บไซต์">
       <div><p class="eyebrow"><span class="rule"></span> THE RED SIDE OF FOOTBALL</p>
         <h1>ALL THINGS <em>UNITED<span>.</span></em></h1>
-        <p class="intro-sub">ข่าวแมนยู ทุกความเคลื่อนไหว พร้อมภาพที่คุณอยากเห็น — ในที่เดียว</p>
+        
       </div>
       <div class="intro-aside"><div class="intro-number">1878<span>EST.</span></div><p>THE LEGACY. THE PASSION.<br />THE RED DEVILS.</p></div>
     </section>
@@ -67,7 +67,7 @@
         <div id="featuredStories" class="featured-stack">
           <div class="featured-placeholder loading-glow"></div><div class="featured-placeholder loading-glow"></div>
         </div>
-        <div class="update-panel">
+        <div class="update-panel" hidden>
           <div class="update-panel-top"><span class="status-icon"><span class="pulse"></span></span><span>ระบบอัปเดตอัตโนมัติ</span><span class="panel-live">AUTO SYNC</span></div>
           <div class="update-panel-main"><div><small>ตรวจสอบครั้งล่าสุด</small><strong id="lastUpdated">กำลังโหลด...</strong></div><div><small>ตรวจสอบครั้งถัดไป</small><strong id="nextUpdate">10:00</strong></div></div>
           <div class="update-panel-bar"><span id="refreshProgress"></span></div>
@@ -76,7 +76,7 @@
       </div>
     </section>
 
-    <div class="container stats-strip" aria-label="สถานะเว็บไซต์">
+    <div class="container stats-strip" aria-label="สถานะเว็บไซต์" hidden>
       <span><span class="stat-dot"></span> AUTO REFRESH ACTIVE</span>
       <span>NEWS SOURCES <strong id="sourceCount">04</strong></span>
       <span>NEWS AVAILABLE <strong id="articleCount">—</strong></span>
@@ -87,7 +87,7 @@
     <section id="matches" class="container match-section" aria-label="ตารางแข่งและผลการแข่งขันแมนเชสเตอร์ ยูไนเต็ด">
       <div class="section-header">
         <div><div class="section-kicker">MATCHDAY CONTROL <span>/</span> 001</div><h2>UNITED <em class="match-red">MATCHDAY</em><span class="red-period">.</span> <small>FIXTURES &amp; RESULTS</small></h2></div>
-        <div class="match-source"><span class="stat-dot"></span> ข้อมูลการแข่งขันจาก ESPN <span id="matchSynced">กำลังโหลด...</span><span id="liveCadence" class="live-cadence">ตรวจทุก 10 นาที</span></div>
+        <div class="match-source"><span class="stat-dot"></span> ข้อมูลการแข่งขันจาก ESPN <span id="matchSynced" hidden>กำลังโหลด...</span><span id="liveCadence" class="live-cadence" hidden>ตรวจทุก 10 นาที</span></div>
       </div>
       <div class="match-overview">
         <article class="next-match" id="nextMatch" aria-live="polite"><span class="match-loading">กำลังตรวจสอบโปรแกรมนัดถัดไป...</span></article>
@@ -103,32 +103,32 @@
     </section>
 
     <section id="standings" class="container standings-section" aria-label="ตารางคะแนนพรีเมียร์ลีก">
-      <div class="section-header"><div><div class="section-kicker">PREMIER LEAGUE <span>/</span> 002</div><h2>LEAGUE <em>TABLE</em><span class="red-period">.</span> <small>ตารางคะแนนพรีเมียร์ลีก</small></h2></div><div class="table-source"><span id="standingsSeason">ฤดูกาลปัจจุบัน</span><span id="standingsSynced">กำลังโหลด...</span></div></div>
+      <div class="section-header"><div><div class="section-kicker">PREMIER LEAGUE <span>/</span> 002</div><h2>LEAGUE <em>TABLE</em><span class="red-period">.</span> <small>ตารางคะแนนพรีเมียร์ลีก</small></h2></div><div class="table-source"><span id="standingsSeason">ฤดูกาลปัจจุบัน</span><span id="standingsSynced" hidden>กำลังโหลด...</span></div></div>
       <div class="table-scroll" tabindex="0" aria-label="เลื่อนดูตารางคะแนนได้"><table class="league-table"><thead><tr><th scope="col">อันดับ</th><th scope="col" class="table-team-name">สโมสร</th><th scope="col">แข่ง</th><th scope="col">ชนะ</th><th scope="col">เสมอ</th><th scope="col">แพ้</th><th scope="col">ได้</th><th scope="col">เสีย</th><th scope="col">ผลต่าง</th><th scope="col">แต้ม</th></tr></thead><tbody id="standingsBody"><tr><td colspan="10" class="standings-loading">กำลังโหลดตารางคะแนนจริงจาก ESPN...</td></tr></tbody></table></div>
       <div class="standings-footer"><p id="standingsHealth" role="status">ตารางคะแนนอัปเดตตามแหล่งข้อมูลจริง ไม่ใช่ข้อมูลจำลอง</p><a href="https://www.espn.com/soccer/standings/_/league/eng.1" target="_blank" rel="noopener noreferrer">เปิดตารางคะแนน ESPN ↗</a></div>
     </section>
 
 
     <section id="squad" class="container squad-section" aria-label="รายชื่อนักเตะแมนเชสเตอร์ ยูไนเต็ด">
-      <div class="section-header"><div><div class="section-kicker">THE SQUAD <span>/</span> PLAYERS</div><h2>UNITED <em>PLAYERS</em><span class="red-period">.</span> <small>รายชื่อนักเตะ</small></h2><p class="feature-explainer">รายชื่อนักเตะชุดที่แหล่งข้อมูล ESPN ระบุ รูปผู้เล่น เบอร์เสื้อ ตำแหน่ง และสถิติเมื่อมีข้อมูลจริง</p></div><div class="table-source"><span id="squadCount">กำลังโหลด...</span><span id="squadSynced">รอตรวจข้อมูล</span></div></div>
+      <div class="section-header"><div><div class="section-kicker">THE SQUAD <span>/</span> PLAYERS</div><h2>UNITED <em>PLAYERS</em><span class="red-period">.</span> <small>รายชื่อนักเตะ</small></h2><p class="feature-explainer">รายชื่อนักเตะชุดที่แหล่งข้อมูล ESPN ระบุ รูปผู้เล่น เบอร์เสื้อ ตำแหน่ง และสถิติเมื่อมีข้อมูลจริง</p></div><div class="table-source"><span id="squadCount">กำลังโหลด...</span><span id="squadSynced" hidden>รอตรวจข้อมูล</span></div></div>
       <div class="feature-controls"><div class="feature-tabs" id="squadTabs" role="group" aria-label="กรองตำแหน่งนักเตะ"><button type="button" class="feature-tab active" data-squad-filter="all" aria-pressed="true">ทั้งหมด</button><button type="button" class="feature-tab" data-squad-filter="ผู้รักษาประตู" aria-pressed="false">ผู้รักษาประตู</button><button type="button" class="feature-tab" data-squad-filter="กองหลัง" aria-pressed="false">กองหลัง</button><button type="button" class="feature-tab" data-squad-filter="กองกลาง" aria-pressed="false">กองกลาง</button><button type="button" class="feature-tab" data-squad-filter="กองหน้า" aria-pressed="false">กองหน้า</button></div><label class="feature-search"><span aria-hidden="true">⌕</span><input id="playerSearch" type="search" placeholder="ค้นหาชื่อนักเตะ..." aria-label="ค้นหานักเตะ" autocomplete="off" /></label></div>
       <div class="squad-grid" id="squadGrid" aria-live="polite"><p class="feature-loading">กำลังตรวจสอบรายชื่อนักเตะจาก ESPN...</p></div>
       <div class="feature-footnote"><p id="squadHealth" role="status">สถิติที่แหล่งข้อมูลไม่มีจะแสดง — ไม่คาดเดาเบอร์หรือสถิติ</p><a href="https://www.espn.com/soccer/team/squad/_/id/360/manchester-united" target="_blank" rel="noopener noreferrer">ดูรายชื่อจาก ESPN ↗</a></div>
     </section>
 
     <section id="transfers" class="transfer-section" aria-label="ข่าวตลาดซื้อขายนักเตะแมนเชสเตอร์ ยูไนเต็ด"><div class="container">
-      <div class="section-header"><div><div class="section-kicker">TRANSFER DESK <span>/</span> NEWS</div><h2>TRANSFER <em>WATCH</em><span class="red-period">.</span> <small>ตลาดนักเตะ</small></h2><p class="feature-explainer">แยกประกาศจากสโมสร กับรายงานจากสื่อ ไม่ยกข่าวลือเป็นดีลยืนยัน</p></div><div class="table-source"><span id="transferCount">กำลังโหลด...</span><span id="transferSynced">รอตรวจข่าว</span></div></div>
+      <div class="section-header"><div><div class="section-kicker">TRANSFER DESK <span>/</span> NEWS</div><h2>TRANSFER <em>WATCH</em><span class="red-period">.</span> <small>ตลาดนักเตะ</small></h2><p class="feature-explainer">แยกประกาศจากสโมสร กับรายงานจากสื่อ ไม่ยกข่าวลือเป็นดีลยืนยัน</p></div><div class="table-source"><span id="transferCount">กำลังโหลด...</span><span id="transferSynced" hidden>รอตรวจข่าว</span></div></div>
       <div class="feature-tabs transfer-tabs" id="transferTabs" role="group" aria-label="เลือกประเภทข่าวซื้อขาย"><button type="button" class="feature-tab active" data-transfer-filter="all" aria-pressed="true">ทุกข่าว</button><button type="button" class="feature-tab" data-transfer-filter="club" aria-pressed="false">✓ ประกาศจากสโมสร</button><button type="button" class="feature-tab" data-transfer-filter="reported" aria-pressed="false">รายงาน / ข่าวลือ</button></div>
       <div id="transferGrid" class="transfer-grid" aria-live="polite"><p class="feature-loading">กำลังตรวจข่าวตลาดซื้อขายจากแหล่งต้นฉบับ...</p></div>
       <div class="feature-footnote"><p id="transferHealth" role="status">ป้าย “ประกาศจากสโมสร” ใช้เฉพาะข่าวจากเว็บไซต์สโมสรที่เข้าเงื่อนไขพาดหัว ข่าวสื่ออื่นยังต้องรอยืนยัน</p><a href="https://www.manutd.com/en/news" target="_blank" rel="noopener noreferrer">ข่าวสโมสรต้นฉบับ ↗</a></div>
     </div></section>
 
-    <section class="container data-health-section" aria-label="สถานะความสดของข้อมูล"><div class="health-header"><div><div class="section-kicker">DATA MONITOR <span>/</span> AUTO CHECK</div><h2>สถานะข้อมูล<span class="red-period">.</span></h2><p>แสดงเวลาเช็กข้อมูลจริงและเตือนข้อมูลเก่า ไม่รับประกันว่าต้นทางมีข่าวหรือรูปใหม่ทุกครั้ง</p></div><div id="healthOverall" class="health-overall" role="status">กำลังตรวจ...</div></div><div class="health-grid" id="healthGrid" aria-live="polite"></div><p class="health-note">ระบบตรวจแหล่งข้อมูลทุก 30 นาทีเมื่อ Netlify Scheduled Function ทำงานบน Production (บันทึกผลใน Logs ไม่ส่งแจ้งเตือน) และเว็บตรวจซ้ำเมื่อมีคนเปิดหน้า</p></section>
+    <section class="container data-health-section" aria-label="สถานะความสดของข้อมูล" hidden><div class="health-header"><div><div class="section-kicker">DATA MONITOR <span>/</span> AUTO CHECK</div><h2>สถานะข้อมูล<span class="red-period">.</span></h2><p>แสดงเวลาเช็กข้อมูลจริงและเตือนข้อมูลเก่า ไม่รับประกันว่าต้นทางมีข่าวหรือรูปใหม่ทุกครั้ง</p></div><div id="healthOverall" class="health-overall" role="status">กำลังตรวจ...</div></div><div class="health-grid" id="healthGrid" aria-live="polite"></div><p class="health-note">ระบบตรวจแหล่งข้อมูลทุก 30 นาทีเมื่อ Netlify Scheduled Function ทำงานบน Production (บันทึกผลใน Logs ไม่ส่งแจ้งเตือน) และเว็บตรวจซ้ำเมื่อมีคนเปิดหน้า</p></section>
 
     <section id="latest" class="container news-section">
       <div class="section-header">
         <div><div class="section-kicker">WHAT'S HAPPENING <span>/</span> 003</div><h2>ข่าวล่าสุด<span class="red-period">.</span> <small>LATEST NEWS</small></h2></div>
-        <div class="section-counter"><span class="pulse"></span><span id="newsUpdatedBadge">กำลังอัปเดตข้อมูล</span></div>
+        <div class="section-counter" hidden><span class="pulse"></span><span id="newsUpdatedBadge">กำลังอัปเดตข้อมูล</span></div>
       </div>
       <div class="filter-toolbar">
         <div class="filter-tabs" id="categoryTabs" role="group" aria-label="เลือกหมวดข่าว">

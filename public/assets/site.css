@@ -147,3 +147,30 @@
 @media(max-width:1150px){.squad-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:780px){.squad-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.transfer-grid{grid-template-columns:1fr}.feature-footnote{flex-wrap:wrap}}
 @media(max-width:520px){.squad-section,.transfer-section{padding:54px 0}.squad-grid{gap:9px}.player-image{height:140px}.player-content{padding:12px}.player-name{font-size:21px}.player-stats b{font-size:17px}.feature-search{width:100%}.feature-tab{padding:9px 10px;font-size:11px}.transfer-card{padding:16px}.transfer-title{font-size:16px}}
+
+
+/* Reader-first layout (2026-11): monitoring continues in JS/Functions, but
+   operational widgets and timers are not displayed to ordinary visitors. */
+[hidden] { display: none !important; }
+.feed-notice { display: none !important; }
+
+/* Use the space previously occupied by AUTO SYNC for featured news images. */
+@media (min-width: 951px) {
+  .lead-aside { align-self: stretch; }
+  .featured-stack { flex: 1; }
+  .featured-item { flex: 1; min-height: 170px; grid-template-columns: minmax(130px, 42%) minmax(0, 1fr); align-items: stretch; }
+  .featured-thumb { width: 100%; height: 100%; min-height: 150px; }
+}
+@media (max-width: 950px) {
+  .lead-aside { display: flex; flex-direction: column; gap: 0; }
+  .featured-stack { flex: initial; display: flex; flex-direction: column; }
+  .featured-item { flex: initial; }
+}
+@media (min-width: 701px) and (max-width: 950px) {
+  .featured-item { grid-template-columns: 145px minmax(0,1fr); }
+  .featured-thumb { width: 145px; height: 110px; min-height: 0; }
+}
+@media (max-width: 700px) {
+  .featured-item { grid-template-columns: 122px minmax(0, 1fr); }
+  .featured-thumb { width: 122px; height: 86px; min-height: 0; }
+}
